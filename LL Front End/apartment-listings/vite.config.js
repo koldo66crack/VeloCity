@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react()],
-    server: {
+    server: process.env.NODE_ENV === "development" ? {
       proxy: {
         "/api": {
           target: "http://localhost:3001",
@@ -15,5 +15,5 @@ export default defineConfig({
           secure: false,
         },
       },
-    },
+    } : {},
 })
