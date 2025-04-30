@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @db.Uuid @map("id")
+  email              String?  @db.VarChar(255) @map("email")
+  full_name          String?  @map("full_name")
+  created_at         DateTime @map("created_at")
+  updated_at         DateTime @map("updated_at")
+  invited_at         DateTime? @map("invited_at")
+  confirmation_sent_at DateTime? @map("confirmation_sent_at")
+  email_confirmed_at DateTime? @map("email_confirmed_at")
+  last_sign_in_at    DateTime? @map("last_sign_in_at")
+
+  // <-- add these two back-relations:
+  groupMembers       GroupMember[]
+  sentInvites        GroupInvite[] @relation("Inviter")
+
+  @@map("User")       // name of your view
+}
+
+
+model UserPreferences {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  minBudget   Int?
+  maxBudget   Int?
+  bedrooms    Int?
+  maxDistance Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SavedListing {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+}
+
+model ViewedListing {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, listingId])
+}
+
+model Group {
+  id        String        @id @default(cuid())
+  ownerId   String
+  createdAt DateTime      @default(now())
+  invites   GroupInvite[]
+  members   GroupMember[]
+}
+
+model GroupMember {
+  id        String    @id @default(cuid())
+  userId    String
+  groupId   String
+  status    String    @default("invited")
+  invitedAt DateTime  @default(now())
+  joinedAt  DateTime?
+  group     Group     @relation(fields: [groupId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model GroupInvite {
+  id           String   @id @default(cuid())
+  groupId      String
+  inviterId    String
+  invitedEmail String
+  inviteCode   String   @unique
+  accepted     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  group        Group    @relation(fields: [groupId], references: [id])
+  inviter      User     @relation("Inviter", fields: [inviterId], references: [id])
+}

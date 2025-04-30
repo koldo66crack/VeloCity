@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Maps Demo</title>
+    <style>
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJKapYkEXB-jHM5htvhdCbuYG40haS0Cc&callback=initMap"
+      defer
+    ></script>
+    <script>
+      function initMap() {
+        const columbia = { lat: 40.807384, lng: -73.963036};
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 15,
+          center: columbia,
+        });
+
+        new google.maps.Marker({
+          position: columbia,
+          map,
+          title: "Columbia University",
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
