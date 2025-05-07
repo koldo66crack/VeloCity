@@ -6,6 +6,8 @@ import SavedListingsTab from "../components/SavedListingsTab";
 import PreferencesTab from "../components/PreferencesTab";
 import GroupActivityTab from "../components/GroupActivityTab";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const userId = user?.id;
@@ -29,10 +31,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const prefsObj = await safeJson(`/api/preferences/${userId}`, null);
+      const prefsObj = await safeJson(`${BASE_URL}/api/preferences/${userId}`, null);
       setPrefs(prefsObj);
 
-      const savedRows = await safeJson(`/api/saved/${userId}`, []);
+      const savedRows = await safeJson(`${BASE_URL}/api/saved/${userId}`, []);
       setSavedIds(savedRows.map(r => String(r.listingId)));
 
       setReady(true);
@@ -48,14 +50,14 @@ export default function DashboardPage() {
 
   const refreshSaved = async () => {
     if (!userId) return;
-    const rows = await safeJson(`/api/saved/${userId}`, []);
+    const rows = await safeJson(`${BASE_URL}/api/saved/${userId}`, []);
     setSavedIds(rows.map(r => String(r.listingId)));
   };
 
   const handleSave = listingId => {
     if (!userId) return;
     setSavedIds(prev => [...new Set([...prev, listingId])]);
-    postJson("/api/saved", { userId, listingId }).then(refreshSaved);
+    postJson("${BASE_URL}/api/saved", { userId, listingId }).then(refreshSaved);
   };
 
   const findListingById = id =>
