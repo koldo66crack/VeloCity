@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../store/useAuth";
 
+// Ensure this env var is set in your deploy environment
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function GroupActivityTab() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -15,7 +18,7 @@ export default function GroupActivityTab() {
   async function fetchGroup() {
     if (!user?.id) return;
     try {
-      const res = await fetch(`/api/group/my?userId=${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/group/my?userId=${user.id}`);
       if (res.ok) {
         const { group, members } = await res.json();
         setGroup(group);
@@ -36,7 +39,7 @@ export default function GroupActivityTab() {
   const handleCreateGroup = async () => {
     if (!user?.id) return;
     try {
-      await fetch("/api/group/create", {
+      await fetch(`${BASE_URL}/api/group/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
@@ -53,7 +56,7 @@ export default function GroupActivityTab() {
     if (!inviteEmail) return;
     setInviteStatus("Sending…");
     try {
-      const res = await fetch("/api/invites", {
+      const res = await fetch(`${BASE_URL}/api/invites`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -90,11 +93,7 @@ export default function GroupActivityTab() {
           <ul className="mb-4 space-y-2">
             {members.map((m) => {
               const who =
-                m.email ??
-                m.invitedEmail ??
-                m.user?.email ??
-                m.userId ??
-                "Unknown";
+                m.email ?? m.invitedEmail ?? m.user?.email ?? m.userId ?? "Unknown";
               return (
                 <li key={m.id} className="flex justify-between">
                   <span>{who}</span>
