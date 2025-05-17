@@ -1,5 +1,4 @@
-// import { Routes, Route } from "react-router-dom";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AuthModal from "./components/AuthModal";
 import LandingPage from "./pages/LandingPage";
@@ -9,8 +8,8 @@ import MemberHome from "./pages/MemberHome";
 import DashboardPage from "./pages/DashboardPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import JoinViaInvite from './pages/JoinViaInvite'
-import EmailConfirmed from './pages/EmailConfirmed';
+import JoinViaInvite from "./pages/JoinViaInvite";
+import EmailConfirmed from "./pages/EmailConfirmed";
 
 import PublicLayout from "./layouts/PublicLayout";
 import MemberLayout from "./layouts/MemberLayout";

@@ -1,6 +1,7 @@
+// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import AuthProvider from './context/AuthProvider';
 import App from './App';
 import './index.css';
@@ -12,10 +13,10 @@ if (process.env.NODE_ENV === 'production') {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <Router>
       <AuthProvider>
         <App />
       </AuthProvider>
-    </BrowserRouter>
+    </Router>
   </React.StrictMode>,
 );
