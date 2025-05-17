@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../store/useAuth";
 import { useUI } from "../store/useUI";
 import { calculateWalkingDistance } from "../utils/distanceUtils";
@@ -79,8 +80,9 @@ export default function ListingCard({
           Viewed
         </span>
       )}
-      <a
-        href={`/listing/${listing.id}`}
+      
+      <Link
+        to={`/listing/${listing.id}`}
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleView}
@@ -137,7 +139,7 @@ export default function ListingCard({
             Listed by {displayMarketplaces}
           </p>
         </div>
-      </a>
+      </Link>
 
       <button
         onClick={handleSave}
