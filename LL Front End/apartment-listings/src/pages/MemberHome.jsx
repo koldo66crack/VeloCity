@@ -10,6 +10,9 @@ import {
   DEFAULT_FILTERS,
 } from "../hooks/useFilteredListings";
 
+// Ensure this env var is defined in your deploy settings
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function MemberHome() {
   const { uid } = useParams();
   const { openAuthModal } = useUI();
@@ -21,11 +24,12 @@ export default function MemberHome() {
   const [viewedIds, setViewedIds] = useState([]);
   const [listings, allAreas] = useFilteredListings(filters);
 
-  // Load user preferences
+  // Load user preferences, saved & viewed listings
   useEffect(() => {
     if (!uid) return;
     (async () => {
-      const prefRes = await fetch(`/api/preferences/${uid}`);
+      // Preferences
+      const prefRes = await fetch(`${BASE_URL}/api/preferences/${uid}`);
       if (prefRes.ok) {
         const data = await prefRes.json();
         if (data) {
@@ -41,8 +45,7 @@ export default function MemberHome() {
                 ? String(data.bathrooms)
                 : DEFAULT_FILTERS.bathrooms,
             lionScores: data.lionScores ?? DEFAULT_FILTERS.lionScores,
-            marketplaces:
-              data.marketplaces ?? DEFAULT_FILTERS.marketplaces,
+            marketplaces: data.marketplaces ?? DEFAULT_FILTERS.marketplaces,
             maxComplaints:
               data.maxComplaints ?? DEFAULT_FILTERS.maxComplaints,
             onlyNoFee: data.onlyNoFee ?? DEFAULT_FILTERS.onlyNoFee,
@@ -56,13 +59,15 @@ export default function MemberHome() {
       }
       setPrefLoaded(true);
 
-      // Load saved & viewed
-      const savedRes = await fetch(`/api/saved/${uid}`);
+      // Saved Listings
+      const savedRes = await fetch(`${BASE_URL}/api/saved/${uid}`);
       if (savedRes.ok) {
         const rows = await savedRes.json();
         setSavedIds(rows.map((r) => String(r.listingId)));
       }
-      const viewedRes = await fetch(`/api/viewed/${uid}`);
+
+      // Viewed Listings
+      const viewedRes = await fetch(`${BASE_URL}/api/viewed/${uid}`);
       if (viewedRes.ok) {
         const rows = await viewedRes.json();
         setViewedIds(rows.map((r) => String(r.listingId)));
@@ -70,7 +75,7 @@ export default function MemberHome() {
     })();
   }, [uid]);
 
-  // Save preference changes
+  // Save preference changes when user updates filters
   useEffect(() => {
     if (!prefLoaded) return;
     if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
@@ -94,7 +99,7 @@ export default function MemberHome() {
           onlyFeatured: filters.onlyFeatured,
           maxComplaints: filters.maxComplaints,
         };
-        fetch("/api/preferences", {
+        fetch(`${BASE_URL}/api/preferences`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -105,11 +110,12 @@ export default function MemberHome() {
     }
   }, [filters, origFilters, prefLoaded, uid]);
 
+  // Handlers to save/view listings
   const handleSave = (listingId) => {
     if (!uid) return openAuthModal();
     const idStr = String(listingId);
     setSavedIds((prev) => [...new Set([...prev, idStr])]);
-    fetch("/api/saved", {
+    fetch(`${BASE_URL}/api/saved`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: uid, listingId: idStr }),
@@ -121,7 +127,7 @@ export default function MemberHome() {
     const idStr = String(listingId);
     if (!viewedIds.includes(idStr)) {
       setViewedIds((prev) => [...new Set([...prev, idStr])]);
-      fetch("/api/viewed", {
+      fetch(`${BASE_URL}/api/viewed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: uid, listingId: idStr }),
