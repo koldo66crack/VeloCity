@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const handleSave = listingId => {
     if (!userId) return;
     setSavedIds(prev => [...new Set([...prev, listingId])]);
-    postJson("${BASE_URL}/api/saved", { userId, listingId }).then(refreshSaved);
+    postJson(`${BASE_URL}/api/saved`, { userId, listingId }).then(refreshSaved);
   };
 
   const findListingById = id =>
