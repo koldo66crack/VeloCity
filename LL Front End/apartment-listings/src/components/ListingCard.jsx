@@ -64,6 +64,10 @@ export default function ListingCard({
     ? `$${Math.round(price / listing.bedrooms)} / bed`
     : "—";
 
+  const displayMarketplaces = Array.isArray(listing.marketplace)
+    ? listing.marketplace.join(", ")
+    : listing.marketplace || listing.listed_by || "unknown";
+
   return (
     <div
       className={`relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition border border-gray-200 ${
@@ -89,7 +93,8 @@ export default function ListingCard({
               alt={listing.title}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.src = "https://via.placeholder.com/800x400?text=No+Image";
+                e.target.src =
+                  "https://via.placeholder.com/800x400?text=No+Image";
               }}
             />
           </div>
@@ -111,8 +116,7 @@ export default function ListingCard({
               <img src={bath} className="w-4 h-4" /> {listing.bathrooms} bath
             </span>
             <span className="flex items-center gap-1">
-              <img src={size} className="w-4 h-4" /> {listing.size_sqft || "—"}{" "}
-              ft²
+              <img src={size} className="w-4 h-4" /> {listing.size_sqft || "—"} ft²
             </span>
           </div>
 
@@ -130,7 +134,7 @@ export default function ListingCard({
           )}
 
           <p className="text-xs text-center text-gray-400 italic">
-            Listed by {listing.marketplace || listing.listed_by || "unknown"}
+            Listed by {displayMarketplaces}
           </p>
         </div>
       </a>
