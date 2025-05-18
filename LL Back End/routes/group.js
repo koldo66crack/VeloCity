@@ -1,11 +1,11 @@
-// routes/groups.js
+// routes/group.js
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// GET /api/group/my?userId=<your-uuid>
+// GET /api/group/my?userId=<uuid>
 router.get("/my", async (req, res) => {
   const userId = req.query.userId || req.headers["x-user-id"];
   if (!userId) return res.status(400).json({ error: "Missing user ID" });
@@ -14,23 +14,25 @@ router.get("/my", async (req, res) => {
     // find the membership row for this user
     const membership = await prisma.groupMember.findFirst({
       where: { userId },
-      include: { group: true },           // <-- not `groups`
+      include: { group: true },
     });
 
     if (!membership || !membership.group) {
       return res.json({ group: null, members: [] });
     }
 
-    // pull back everyone in that same group
+    // pull back everyone in that same group, including their User record
     const members = await prisma.groupMember.findMany({
       where: { groupId: membership.groupId },
+      include: { user: true },
     });
 
-    // return the group itself plus a list of userIds & statuses
+    // return the group itself plus a list of { userId, name, status }
     res.json({
       group: membership.group,
       members: members.map((m) => ({
         userId: m.userId,
+        name: m.user.full_name,
         status: m.status,
       })),
     });
@@ -46,7 +48,6 @@ router.post("/create", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "Missing user ID" });
 
   try {
-    // guard: not already in a group
     const existing = await prisma.groupMember.findFirst({
       where: { userId },
     });
@@ -54,7 +55,6 @@ router.post("/create", async (req, res) => {
       return res.status(400).json({ error: "You already belong to a group" });
     }
 
-    // create the group + membership in one go
     const group = await prisma.group.create({
       data: {
         ownerId: userId,
@@ -62,6 +62,7 @@ router.post("/create", async (req, res) => {
           create: {
             userId,
             status: "joined",
+            joinedAt: new Date(),
           },
         },
       },
