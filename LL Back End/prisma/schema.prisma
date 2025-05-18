@@ -8,23 +8,22 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @db.Uuid @map("id")
-  email              String?  @db.VarChar(255) @map("email")
-  full_name          String?  @map("full_name")
-  created_at         DateTime @map("created_at")
-  updated_at         DateTime @map("updated_at")
-  invited_at         DateTime? @map("invited_at")
-  confirmation_sent_at DateTime? @map("confirmation_sent_at")
-  email_confirmed_at DateTime? @map("email_confirmed_at")
-  last_sign_in_at    DateTime? @map("last_sign_in_at")
+  id                   String         @id @db.Uuid @map("id")
+  email                String?        @db.VarChar(255) @map("email")
+  full_name            String?        @map("full_name")
+  created_at           DateTime       @map("created_at")
+  updated_at           DateTime       @map("updated_at")
+  invited_at           DateTime?      @map("invited_at")
+  confirmation_sent_at DateTime?      @map("confirmation_sent_at")
+  email_confirmed_at   DateTime?      @map("email_confirmed_at")
+  last_sign_in_at      DateTime?      @map("last_sign_in_at")
 
-  // <-- add these two back-relations:
-  groupMembers       GroupMember[]
-  sentInvites        GroupInvite[] @relation("Inviter")
+  // relations
+  groupMembers         GroupMember[]
+  sentInvites          GroupInvite[]  @relation("Inviter")
 
-  @@map("User")       // name of your view
+  @@map("User")
 }
-
 
 model UserPreferences {
   id          String   @id @default(cuid())
@@ -65,13 +64,14 @@ model Group {
 
 model GroupMember {
   id        String    @id @default(cuid())
-  userId    String
   groupId   String
+  userId    String
   status    String    @default("invited")
   invitedAt DateTime  @default(now())
   joinedAt  DateTime?
+
   group     Group     @relation(fields: [groupId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }
 
 model GroupInvite {
@@ -82,6 +82,7 @@ model GroupInvite {
   inviteCode   String   @unique
   accepted     Boolean  @default(false)
   createdAt    DateTime @default(now())
+
   group        Group    @relation(fields: [groupId], references: [id])
   inviter      User     @relation("Inviter", fields: [inviterId], references: [id])
 }
