@@ -31,6 +31,7 @@ router.get("/my", async (req, res) => {
     res.json({
       group: membership.group,
       members: members.map((m) => ({
+        id:      m.id,
         userId: m.userId,
         name: m.user.full_name,
         status: m.status,

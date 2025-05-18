@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
       return res.status(500).json({ error: "Failed to send invite email." });
     }
 
-    res.status(201).json({ message: `Invite sent to ${invitedEmail}!` });
+    res.status(201).json({ message: `Invite sent to ${invitedEmail}!`, inviteLink,});
   } catch (error) {
     console.error("[Create Invite] Error:", error);
     res.status(500).json({ error: "Server error while creating invite." });

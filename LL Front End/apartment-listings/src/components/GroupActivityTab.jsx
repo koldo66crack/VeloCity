@@ -92,8 +92,7 @@ export default function GroupActivityTab() {
 
           <ul className="mb-4 space-y-2">
             {members.map((m) => {
-              const who =
-                m.email ?? m.invitedEmail ?? m.user?.email ?? m.userId ?? "Unknown";
+              const who = m.name || m.userId;
               return (
                 <li key={m.id} className="flex justify-between">
                   <span>{who}</span>
