@@ -1,31 +1,53 @@
 // src/components/GroupActivityTab.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../store/useAuth";
-
-// Ensure this env var is set in your deploy environment
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { supabase } from "../utils/supabaseClient";
 
 export default function GroupActivityTab() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
-  const [showInviteForm, setShowInviteForm] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteStatus, setInviteStatus] = useState("");
+  const [nameMap, setNameMap] = useState({});            // id → full_name
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joinStatus, setJoinStatus] = useState("");
 
-  // Fetch your group + members
+  // Helper: show full_name if available, otherwise fallback to id
+  const displayName = (id) => nameMap[id] || id;
+
   async function fetchGroup() {
     if (!user?.id) return;
+    setLoading(true);
+
     try {
-      const res = await fetch(`${BASE_URL}/api/group/my?userId=${user.id}`);
-      if (res.ok) {
-        const { group, members } = await res.json();
-        setGroup(group);
-        setMembers(members);
+      // 1. Fetch group + members from your API
+      const res = await fetch(`/api/group/my?userId=${user.id}`);
+      if (!res.ok) throw new Error("Failed to fetch group");
+      const { group, members } = await res.json();
+      setGroup(group);
+      setMembers(members);
+
+      // 2. Collect IDs we need names for (owner + members)
+      const ids = [group.ownerId, ...members.map((m) => m.userId)];
+
+      // 3. Batch-fetch names from profiles table
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+
+      if (error) {
+        console.error("Error loading profile names:", error);
+      } else {
+        const map = {};
+        profiles.forEach((p) => {
+          map[p.id] = p.full_name;
+        });
+        setNameMap(map);
       }
     } catch (err) {
-      console.error("Failed to fetch group info:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -35,11 +57,10 @@ export default function GroupActivityTab() {
     fetchGroup();
   }, [user?.id]);
 
-  // Create new group
-  const handleCreateGroup = async () => {
+  async function handleCreateGroup() {
     if (!user?.id) return;
     try {
-      await fetch(`${BASE_URL}/api/group/create`, {
+      await fetch("/api/group/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
@@ -48,35 +69,32 @@ export default function GroupActivityTab() {
     } catch (err) {
       console.error("Failed to create group:", err);
     }
-  };
+  }
 
-  // Send an invite
-  const handleInviteSubmit = async (e) => {
+  async function handleJoinByCode(e) {
     e.preventDefault();
-    if (!inviteEmail) return;
-    setInviteStatus("Sending…");
+    if (!user?.id || !joinCode) return;
+
+    setJoinStatus("Joining...");
     try {
-      const res = await fetch(`${BASE_URL}/api/invites`, {
+      const res = await fetch("/api/group/joinByCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          groupId: group.id,
-          invitedEmail: inviteEmail,
-          inviterId: user.id,
-        }),
+        body: JSON.stringify({ userId: user.id, groupCode: joinCode }),
       });
       const body = await res.json();
       if (res.ok) {
-        setInviteStatus(`Invite link: ${body.inviteLink}`);
-        setInviteEmail("");
+        setJoinStatus("Joined successfully!");
+        setJoinCode("");
+        await fetchGroup();
       } else {
-        setInviteStatus(body.error || "Failed to send invite");
+        setJoinStatus(body.error || "Join failed.");
       }
     } catch (err) {
-      console.error(err);
-      setInviteStatus("Error sending invite");
+      console.error("Join error:", err);
+      setJoinStatus("Error joining group.");
     }
-  };
+  }
 
   return (
     <div className="p-4">
@@ -87,71 +105,62 @@ export default function GroupActivityTab() {
       ) : members.length > 0 ? (
         <>
           <p className="mb-4">
-            You are in a group with {members.length} member(s).
+            You are in a group with {members.length} member
+            {members.length > 1 ? "s" : ""}.
+          </p>
+
+          <p className="text-sm text-gray-600 mb-2">
+            Group created by: <strong>{displayName(group.ownerId)}</strong>
+          </p>
+
+          <p className="text-sm text-gray-600 mb-4">
+            Group Code: <strong>{group.groupCode}</strong>
           </p>
 
           <ul className="mb-4 space-y-2">
-            {members.map((m) => {
-              const who = m.name || m.userId;
-              return (
-                <li key={m.id} className="flex justify-between">
-                  <span>{who}</span>
-                  <span className="text-sm text-gray-500">{m.status}</span>
-                </li>
-              );
-            })}
+            {members.map((m) => (
+              <li key={m.id} className="flex justify-between">
+                <span>{displayName(m.userId)}</span>
+                <span className="text-sm text-gray-500">{m.status}</span>
+              </li>
+            ))}
           </ul>
-
-          {showInviteForm ? (
-            <form onSubmit={handleInviteSubmit} className="mb-4 space-y-2">
-              <input
-                type="email"
-                className="border px-2 py-1 w-full"
-                placeholder="Friend’s email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                required
-              />
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Send Invite
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 border rounded"
-                  onClick={() => {
-                    setShowInviteForm(false);
-                    setInviteStatus("");
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-              {inviteStatus && (
-                <p className="text-sm mt-2 text-gray-700">{inviteStatus}</p>
-              )}
-            </form>
-          ) : (
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-              onClick={() => setShowInviteForm(true)}
-            >
-              Invite New Member
-            </button>
-          )}
         </>
       ) : (
         <>
           <p className="mb-4">You don’t have a group yet!</p>
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded mb-2"
             onClick={handleCreateGroup}
           >
             Create a Group
           </button>
+          <button
+            className="text-blue-600 underline text-sm mb-4"
+            onClick={() => setShowJoinForm(!showJoinForm)}
+          >
+            {showJoinForm ? "Cancel" : "Join group via code"}
+          </button>
+
+          {showJoinForm && (
+            <form onSubmit={handleJoinByCode} className="space-y-2 max-w-sm">
+              <input
+                type="text"
+                className="border px-2 py-1 w-full"
+                placeholder="Enter group code"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Join Group
+              </button>
+              {joinStatus && <p className="text-sm text-gray-700">{joinStatus}</p>}
+            </form>
+          )}
         </>
       )}
     </div>

@@ -1,4 +1,3 @@
-// routes/groups.js
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 
@@ -11,27 +10,36 @@ router.get("/my", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "Missing user ID" });
 
   try {
-    // find the membership row for this user
+    // 1) Load membership + its Group
     const membership = await prisma.groupMember.findFirst({
       where: { userId },
-      include: { group: true },           // <-- not `groups`
+      include: { group: true },
     });
 
-    if (!membership || !membership.group) {
+    // 2) No membership → no group
+    if (!membership) {
       return res.json({ group: null, members: [] });
     }
 
-    // pull back everyone in that same group
+    // 3) Fetch all members of that group
     const members = await prisma.groupMember.findMany({
-      where: { groupId: membership.groupId },
+      where: { groupId: membership.group.id },
     });
 
-    // return the group itself plus a list of userIds & statuses
+    // 4) Return only the fields you have defined
     res.json({
-      group: membership.group,
+      group: {
+        id:        membership.group.id,
+        groupCode: membership.group.groupCode,
+        ownerId:   membership.group.ownerId,
+        createdAt: membership.group.createdAt,
+      },
       members: members.map((m) => ({
-        userId: m.userId,
-        status: m.status,
+        id:        m.id,
+        userId:    m.userId,
+        status:    m.status,
+        invitedAt: m.invitedAt,
+        joinedAt:  m.joinedAt,
       })),
     });
   } catch (err) {
@@ -46,15 +54,15 @@ router.post("/create", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "Missing user ID" });
 
   try {
-    // guard: not already in a group
+    // ensure they’re not already in a group
     const existing = await prisma.groupMember.findFirst({
       where: { userId },
     });
     if (existing) {
-      return res.status(400).json({ error: "You already belong to a group" });
+      return res.status(400).json({ error: "You already belong to a group." });
     }
 
-    // create the group + membership in one go
+    // create the group (Prisma auto-generates `groupCode`) + your membership
     const group = await prisma.group.create({
       data: {
         ownerId: userId,
@@ -71,6 +79,43 @@ router.post("/create", async (req, res) => {
   } catch (err) {
     console.error("❌ Failed to create group:", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/group/joinByCode
+router.post("/joinByCode", async (req, res) => {
+  const { userId, groupCode } = req.body;
+  if (!userId || !groupCode) {
+    return res.status(400).json({ error: "Missing userId or groupCode." });
+  }
+
+  try {
+    // ensure they’re not already in a group
+    if (await prisma.groupMember.findFirst({ where: { userId } })) {
+      return res.status(400).json({ error: "You already belong to a group." });
+    }
+
+    // find the group by code
+    const group = await prisma.group.findUnique({
+      where: { groupCode },
+    });
+    if (!group) {
+      return res.status(404).json({ error: "Invalid group code." });
+    }
+
+    // add them as a joined member
+    await prisma.groupMember.create({
+      data: {
+        groupId: group.id,
+        userId,
+        status: "joined",
+      },
+    });
+
+    res.json({ message: "Successfully joined the group!", groupId: group.id });
+  } catch (err) {
+    console.error("[JoinByCode Error]", err);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 

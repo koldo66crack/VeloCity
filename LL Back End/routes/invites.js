@@ -49,7 +49,10 @@ router.get("/:inviteCode", async (req, res) => {
   try {
     const invite = await prisma.groupInvite.findUnique({
       where: { inviteCode },
-      include: { group: true },
+      include: {
+        group: true,
+        inviter: true, // include inviter details
+      },
     });
 
     if (!invite) {
@@ -60,6 +63,7 @@ router.get("/:inviteCode", async (req, res) => {
       id: invite.id,
       invitedEmail: invite.invitedEmail,
       accepted: invite.accepted,
+      inviterEmail: invite.inviter?.email || "Unknown",
       group: {
         id: invite.group.id,
         createdAt: invite.group.createdAt,
@@ -90,8 +94,18 @@ router.post("/:inviteCode/accept", async (req, res) => {
     if (!invite) {
       return res.status(400).json({ error: "Invalid invite code." });
     }
+
     if (invite.accepted) {
       return res.status(400).json({ error: "Invite already accepted." });
+    }
+
+    // Prevent joining if already in a group
+    const existing = await prisma.groupMember.findFirst({
+      where: { userId },
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: "You already belong to a group." });
     }
 
     // Add user to group
