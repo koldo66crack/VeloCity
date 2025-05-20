@@ -1,57 +1,32 @@
 import { useState } from "react";
 import { useAuth } from "../store/useAuth";
-import { useUI } from "../store/useUI";
-import { supabase } from "../lib/supabaseClient";
+import { useUI }   from "../store/useUI";
 
 export default function Register({ switchToLogin }) {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
-  const signUp = useAuth((s) => s.signUp);
+  const signUp            = useAuth((s) => s.signUp);
   const { closeAuthModal } = useUI();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Step 1: Sign up
-    const { data, error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        data: {
-          full_name: form.name.replace(/[^\x00-\x7F]/g, ""),
-        },
-      },
-    });
+    const { error } = await signUp(
+      form.email,
+      form.password,
+      form.name.replace(/[^\x00-\x7F]/g, "")
+    );
 
     if (error) {
       alert(error.message);
-      setLoading(false);
-      return;
+    } else {
+      closeAuthModal();   // close after successful sign-up
+      alert("Check your email to confirm your account!");
+      switchToLogin();    // optional: flip back to login tab
     }
 
-    // Step 2: Insert into profiles if user exists
-    if (data?.user) {
-      const { id } = data.user;
-
-      const { error: profileError } = await supabase.from("profiles").insert([
-        {
-          id,
-          full_name: form.name.replace(/[^\x00-\x7F]/g, ""),
-        },
-      ]);
-
-      if (profileError) {
-        console.error("Error inserting into profiles:", profileError.message);
-        alert("Signup succeeded but failed to save profile info.");
-      } else {
-        alert("Signup successful! Check your email to confirm.");
-      }
-    }
-
-    closeAuthModal();
-    switchToLogin();
     setLoading(false);
   };
 
