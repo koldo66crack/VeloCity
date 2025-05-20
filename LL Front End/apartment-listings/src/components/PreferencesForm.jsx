@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase }            from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function PreferencesForm({ userId }) {
   const [form, setForm] = useState({
@@ -11,7 +13,7 @@ export default function PreferencesForm({ userId }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/api/preferences/${userId}`)
+    fetch(`${BASE_URL}/api/preferences/${userId}`)
       .then((r) => r.json())
       .then((p) => {
         if (p) {
@@ -28,14 +30,14 @@ export default function PreferencesForm({ userId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch("http://localhost:3001/api/preferences", {
-      method: "POST", // creates or updates
+    await fetch(`${BASE_URL}/api/preferences`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId,
         minBudget: +form.minBudget || null,
         maxBudget: +form.maxBudget || null,
-        bedrooms:  +form.bedrooms  || null,
+        bedrooms: +form.bedrooms || null,
         maxDistance: +form.maxDistance || null,
       }),
     });
@@ -43,7 +45,7 @@ export default function PreferencesForm({ userId }) {
   };
 
   const handleDelete = async () => {
-    await fetch(`http://localhost:3001/api/preferences/${userId}`, {
+    await fetch(`${BASE_URL}/api/preferences/${userId}`, {
       method: "DELETE",
     });
     setForm({ minBudget: "", maxBudget: "", bedrooms: "", maxDistance: "" });

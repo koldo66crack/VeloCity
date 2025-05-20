@@ -40,7 +40,7 @@ export default function LandingPage() {
   }, [index]);
 
   const handleGetStarted = () => {
-    navigate("/auth");
+    navigate("/home");
   };
 
   return (

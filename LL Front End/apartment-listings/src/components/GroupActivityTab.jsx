@@ -1,19 +1,19 @@
-// src/components/GroupActivityTab.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../store/useAuth";
 import { supabase } from "../utils/supabaseClient";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function GroupActivityTab() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
-  const [nameMap, setNameMap] = useState({});            // id → full_name
+  const [nameMap, setNameMap] = useState({});
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joinStatus, setJoinStatus] = useState("");
 
-  // Helper: show full_name if available, otherwise fallback to id
   const displayName = (id) => nameMap[id] || id;
 
   async function fetchGroup() {
@@ -21,17 +21,14 @@ export default function GroupActivityTab() {
     setLoading(true);
 
     try {
-      // 1. Fetch group + members from your API
-      const res = await fetch(`/api/group/my?userId=${user.id}`);
+      const res = await fetch(`${BASE_URL}/api/group/my?userId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch group");
+
       const { group, members } = await res.json();
       setGroup(group);
       setMembers(members);
 
-      // 2. Collect IDs we need names for (owner + members)
       const ids = [group.ownerId, ...members.map((m) => m.userId)];
-
-      // 3. Batch-fetch names from profiles table
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -60,7 +57,7 @@ export default function GroupActivityTab() {
   async function handleCreateGroup() {
     if (!user?.id) return;
     try {
-      await fetch("/api/group/create", {
+      await fetch(`${BASE_URL}/api/group/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
@@ -77,7 +74,7 @@ export default function GroupActivityTab() {
 
     setJoinStatus("Joining...");
     try {
-      const res = await fetch("/api/group/joinByCode", {
+      const res = await fetch(`${BASE_URL}/api/group/joinByCode`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, groupCode: joinCode }),

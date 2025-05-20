@@ -13,7 +13,7 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/home");
+    navigate("/");
   };
 
   return (
@@ -54,7 +54,7 @@ export default function Navbar() {
             </button>
           ) : (
             <>
-              <button onClick={() => navigate("/dashboard")}>My Dashboard</button>
+              <button className="cursor-pointer" onClick={() => navigate("/dashboard")}>My Dashboard</button>
 
               {/* Account Dropdown */}
               <div className="relative group">
