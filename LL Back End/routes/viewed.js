@@ -1,8 +1,8 @@
 // routes/viewed.js
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db.js";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 const router = express.Router();
 
 // parse JSON bodies
@@ -19,10 +19,10 @@ router.post("/", async (req, res) => {
   }
   const listingIdStr = String(listingId);
 
-  console.log(`[${new Date().toISOString()}] POST /api/viewed →`, {
-    userId,
-    listingId: listingIdStr,
-  });
+  // console.log(`[${new Date().toISOString()}] POST /api/viewed →`, {
+  //   userId,
+  //   listingId: listingIdStr,
+  // });
 
   try {
     const viewed = await prisma.viewedListing.upsert({
@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
  */
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
-  console.log(`[${new Date().toISOString()}] GET /api/viewed/${userId}`);
+  // console.log(`[${new Date().toISOString()}] GET /api/viewed/${userId}`);
   try {
     const viewed = await prisma.viewedListing.findMany({ where: { userId } });
     res.json(viewed);

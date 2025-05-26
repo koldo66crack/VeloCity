@@ -96,6 +96,7 @@ model GroupSavedListing {
   saver       Profile  @relation("GroupSavedListing_saver", fields: [savedBy], references: [id])
   createdAt   DateTime @default(now())
 
+  @@unique([groupId, listingId])
   @@index([groupId])
   @@index([listingId])
 }

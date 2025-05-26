@@ -7,13 +7,13 @@ export default function MoreFilters({
   setOpenDropdown,
 }) {
   return (
-    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg rounded p-4 w-80">
+    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-80">
       {/* <p className="font-semibold text-gray-800 mb-2">More Filters</p> */}
 
       <label className="flex items-center gap-2 mb-2">
         <input
           type="checkbox"
-          className="accent-blue-600"
+          className="accent-[#34495e]"
           checked={tempFilters.onlyNoFee}
           onChange={(e) =>
             setTempFilters((prev) => ({
@@ -28,7 +28,7 @@ export default function MoreFilters({
       <label className="flex items-center gap-2 mb-2">
         <input
           type="checkbox"
-          className="accent-blue-600"
+          className="accent-[#34495e]"
           checked={tempFilters.onlyFeatured}
           onChange={(e) =>
             setTempFilters((prev) => ({
@@ -46,7 +46,7 @@ export default function MoreFilters({
         </label>
         <input
           type="number"
-          className="border border-gray-300 rounded px-2 py-1 w-full"
+          className="border border-gray-300 px-2 py-1 w-full"
           value={tempFilters.maxComplaints}
           onChange={(e) =>
             setTempFilters((prev) => ({
@@ -72,7 +72,7 @@ export default function MoreFilters({
           RESET
         </button>
         <button
-          className="bg-blue-600 text-white px-4 py-1 rounded cursor-pointer"
+          className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
           onClick={() => {
             setFilters((prev) => ({
               ...prev,

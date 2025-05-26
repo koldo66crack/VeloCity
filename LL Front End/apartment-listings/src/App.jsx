@@ -8,8 +8,6 @@ import MemberHome from "./pages/MemberHome";
 import DashboardPage from "./pages/DashboardPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import EmailConfirmed from "./pages/EmailConfirmed";
-import JoinGroupPage from "./pages/JoinGroupPage";
 
 import PublicLayout from "./layouts/PublicLayout";
 import MemberLayout from "./layouts/MemberLayout";
@@ -50,9 +48,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/email-confirmed" element={<EmailConfirmed />} />
         <Route path="/listing/:id" element={<ListingDetailPage />} />
-        <Route path="/join" element={<JoinGroupPage />} />
       </Routes>
 
       <AuthModal />

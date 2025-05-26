@@ -37,7 +37,7 @@ export default function Register({ switchToLogin }) {
         placeholder="Full name"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border"
         required
       />
       <input
@@ -45,7 +45,7 @@ export default function Register({ switchToLogin }) {
         placeholder="Email"
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border"
         required
       />
       <input
@@ -53,13 +53,13 @@ export default function Register({ switchToLogin }) {
         placeholder="Password"
         value={form.password}
         onChange={(e) => setForm({ ...form, password: e.target.value })}
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border"
         required
       />
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded"
+        className="w-full bg-[#34495e] text-white py-2"
       >
         {loading ? "Signing up…" : "Sign Up"}
       </button>

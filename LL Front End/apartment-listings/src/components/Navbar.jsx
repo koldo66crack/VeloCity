@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/useAuth";
 import { useUI } from "../store/useUI";
 import lionlease from "../assets/svg/new-york-famous-building-svgrepo-com.svg";
+import velocity from "../assets/svg/navbar_logo.svg";
 import search from "../assets/svg/search-svgrepo-com.svg";
 import dropdown from "../assets/svg/dropdown-svgrepo-com.svg";
 
@@ -16,16 +17,27 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const handleLogoClick = () => {
+    if (user && user.id) {
+      navigate(`/home/${user.id}`);
+    } else {
+      navigate("/home");
+    }
+  };
+
   return (
-    <nav className="bg-white fixed w-full z-50 top-0 border-b border-blue-500">
+    <nav className="bg-white fixed w-full z-50 top-0 border-b border-[#34495e]">
       <div className="max-w-7xl flex items-center justify-between mx-auto px-4 py-3">
         {/* Logo */}
-        <Link to="/home" className="flex items-center">
-          <img src={lionlease} alt="Lion Lease Logo" className="w-10 h-10" />
-          <span className="ml-2 text-3xl font-extrabold text-blue-600">
-            LION LEASE
-          </span>
-        </Link>
+        {/* <Link to="/home" className="flex items-center">
+          <img src={velocity} alt="VeloCity Logo" className="w-50 h-10" />
+        </Link> */}
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={handleLogoClick}
+        >
+          <img src={velocity} alt="VeloCity Logo" className="w-50 h-10" />
+        </div>
 
         {/* Search Bar */}
         <div className="hidden sm:flex flex-grow justify-center">
@@ -33,7 +45,7 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Search address..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="pl-10 pr-4 py-2 border border-gray-300 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#34495e]"
             />
             <img
               src={search}
@@ -48,21 +60,26 @@ export default function Navbar() {
           {!user ? (
             <button
               onClick={openAuthModal}
-              className="text-sm font-medium text-gray-700 hover:text-blue-600"
+              className="text-sm font-medium text-gray-700 hover:text-[#34495e]"
             >
               Sign In / Sign Up
             </button>
           ) : (
             <>
-              <button className="cursor-pointer" onClick={() => navigate("/dashboard")}>My Dashboard</button>
+              <button
+                className="cursor-pointer"
+                onClick={() => navigate("/dashboard")}
+              >
+                My Dashboard
+              </button>
 
               {/* Account Dropdown */}
               <div className="relative group">
-                <button className="flex items-center gap-1 text-sm text-gray-700 hover:text-blue-600">
+                <button className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#34495e]">
                   {user.name || user.email}
                   <img src={dropdown} alt="dropdown" className="w-3 h-3" />
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

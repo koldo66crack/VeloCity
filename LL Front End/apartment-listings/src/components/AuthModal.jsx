@@ -12,12 +12,12 @@ export default function AuthModal() {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-white w-full max-w-md rounded-lg shadow-xl p-6 space-y-6">
+      <div className="bg-white w-full max-w-md shadow-xl p-6 space-y-6">
         {/* Tabs */}
         <div className="flex justify-center gap-4">
           <button
             className={`px-4 py-2 font-semibold ${
-              tab === "login" ? "border-b-2 border-blue-600" : "text-gray-500"
+              tab === "login" ? "border-b-2 border-[#34495e]" : "text-gray-500"
             }`}
             onClick={() => setTab("login")}
           >
@@ -25,7 +25,7 @@ export default function AuthModal() {
           </button>
           <button
             className={`px-4 py-2 font-semibold ${
-              tab === "signup" ? "border-b-2 border-blue-600" : "text-gray-500"
+              tab === "signup" ? "border-b-2 border-[#34495e]" : "text-gray-500"
             }`}
             onClick={() => setTab("signup")}
           >

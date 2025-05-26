@@ -61,7 +61,7 @@ export default function PreferencesForm({ userId }) {
           type="number"
           value={form.minBudget}
           onChange={(e) => setForm(f => ({ ...f, minBudget: e.target.value }))}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2"
         />
       </div>
       <div>
@@ -70,7 +70,7 @@ export default function PreferencesForm({ userId }) {
           type="number"
           value={form.maxBudget}
           onChange={(e) => setForm(f => ({ ...f, maxBudget: e.target.value }))}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2"
         />
       </div>
       <div>
@@ -79,7 +79,7 @@ export default function PreferencesForm({ userId }) {
           type="number"
           value={form.bedrooms}
           onChange={(e) => setForm(f => ({ ...f, bedrooms: e.target.value }))}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2"
         />
       </div>
       <div>
@@ -88,11 +88,11 @@ export default function PreferencesForm({ userId }) {
           type="number"
           value={form.maxDistance}
           onChange={(e) => setForm(f => ({ ...f, maxDistance: e.target.value }))}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2"
         />
       </div>
 
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+      <button type="submit" className="bg-[#34495e] text-white px-4 py-2">
         Save Preferences
       </button>
       <button

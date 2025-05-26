@@ -8,8 +8,6 @@ import preferencesRoutes from "./routes/preferences.js";
 import savedRoutes       from "./routes/saved.js";
 import viewedRoutes      from "./routes/viewed.js";
 import groupRoutes       from "./routes/group.js";
-// If you've removed invites entirely, feel free to delete the next line
-import inviteRoutes      from "./routes/invites.js";
 
 dotenv.config();
 const app = express();
@@ -32,8 +30,6 @@ app.use("/api/preferences", preferencesRoutes);
 app.use("/api/saved",       savedRoutes);
 app.use("/api/viewed",      viewedRoutes);
 app.use("/api/group",       groupRoutes);
-// Remove this if you no longer have any invite endpoints
-app.use("/api/invites",     inviteRoutes);
 
 // --- Health check ---
 app.get("/", (req, res) => {

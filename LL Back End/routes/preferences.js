@@ -1,8 +1,8 @@
 // routes/preferences.js
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db.js";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 const router = express.Router();
 
 // parse JSON bodies
@@ -14,7 +14,7 @@ router.use(express.json());
  */
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
-  console.log(`[${new Date().toISOString()}] GET /api/preferences/${userId}`);
+  // console.log(`[${new Date().toISOString()}] GET /api/preferences/${userId}`);
   try {
     const prefs = await prisma.userPreferences.findUnique({ where: { userId } });
     res.json(prefs || {});
@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
     areas,
   } = req.body;
 
-  console.log(`[${new Date().toISOString()}] POST /api/preferences →`, req.body);
+  // console.log(`[${new Date().toISOString()}] POST /api/preferences →`, req.body);
 
   // build data object without undefineds
   const data = {
@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
  */
 router.delete("/:userId", async (req, res) => {
   const { userId } = req.params;
-  console.log(`[${new Date().toISOString()}] DELETE /api/preferences/${userId}`);
+  // console.log(`[${new Date().toISOString()}] DELETE /api/preferences/${userId}`);
   try {
     await prisma.userPreferences.delete({ where: { userId } });
     res.json({ message: "Preferences deleted" });

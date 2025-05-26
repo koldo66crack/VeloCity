@@ -31,11 +31,14 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const prefsObj = await safeJson(`${BASE_URL}/api/preferences/${userId}`, null);
+      const prefsObj = await safeJson(
+        `${BASE_URL}/api/preferences/${userId}`,
+        null
+      );
       setPrefs(prefsObj);
 
       const savedRows = await safeJson(`${BASE_URL}/api/saved/${userId}`, []);
-      setSavedIds(savedRows.map(r => String(r.listingId)));
+      setSavedIds(savedRows.map((r) => String(r.listingId)));
 
       setReady(true);
     })();
@@ -51,17 +54,24 @@ export default function DashboardPage() {
   const refreshSaved = async () => {
     if (!userId) return;
     const rows = await safeJson(`${BASE_URL}/api/saved/${userId}`, []);
-    setSavedIds(rows.map(r => String(r.listingId)));
+    setSavedIds(rows.map((r) => String(r.listingId)));
   };
 
-  const handleSave = listingId => {
+  const handleSave = (listingId) => {
     if (!userId) return;
-    setSavedIds(prev => [...new Set([...prev, listingId])]);
+    setSavedIds((prev) => [...new Set([...prev, listingId])]);
     postJson(`${BASE_URL}/api/saved`, { userId, listingId }).then(refreshSaved);
   };
 
-  const findListingById = id =>
-    enrichedListings.find(l => l.id === id);
+  const handleUnsave = (listingId) => {
+    if (!userId) return;
+    setSavedIds((prev) => prev.filter((id) => id !== listingId));
+    fetch(`${BASE_URL}/api/saved/${userId}/${listingId}`, {
+      method: "DELETE",
+    }).then(refreshSaved);
+  };
+
+  const findListingById = (id) => enrichedListings.find((l) => l.id === id);
 
   const visibleListings = savedIds.map(findListingById).filter(Boolean);
 
@@ -75,19 +85,31 @@ export default function DashboardPage() {
       <div className="mb-6 flex gap-4">
         <button
           onClick={() => setTab("saved")}
-          className={`px-4 py-2 rounded ${tab === "saved" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"}`}
+          className={`px-4 py-2 cursor-pointer ${
+            tab === "saved"
+              ? "bg-[#34495e] text-white"
+              : "bg-gray-100 text-gray-700"
+          }`}
         >
           Saved Listings ({savedIds.length})
         </button>
         <button
           onClick={() => setTab("prefs")}
-          className={`px-4 py-2 rounded ${tab === "prefs" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"}`}
+          className={`px-4 py-2 cursor-pointer ${
+            tab === "prefs"
+              ? "bg-[#34495e] text-white"
+              : "bg-gray-100 text-gray-700"
+          }`}
         >
           Preferences
         </button>
         <button
           onClick={() => setTab("group")}
-          className={`px-4 py-2 rounded ${tab === "group" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"}`}
+          className={`px-4 py-2 cursor-pointer ${
+            tab === "group"
+              ? "bg-[#34495e] text-white"
+              : "bg-gray-100 text-gray-700"
+          }`}
         >
           Group Activity
         </button>
@@ -98,15 +120,12 @@ export default function DashboardPage() {
         <SavedListingsTab
           savedIds={savedIds}
           onSave={handleSave}
+          onUnsave={handleUnsave}
           listings={visibleListings}
         />
       )}
-      {tab === "prefs" && (
-        <PreferencesTab prefs={prefs} userId={userId} />
-      )}
-      {tab === "group" && (
-        <GroupActivityTab />
-      )}
+      {tab === "prefs" && <PreferencesTab prefs={prefs} userId={userId} />}
+      {tab === "group" && <GroupActivityTab />}
     </div>
   );
 }

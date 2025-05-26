@@ -1,7 +1,7 @@
 import React from "react";
 import ListingGrid from "../components/ListingGrid";
 
-export default function SavedListingsTab({ savedIds, onSave, listings }) {
+export default function SavedListingsTab({ savedIds, onSave, onUnsave, listings }) {
   if (listings.length === 0) {
     return <p className="text-gray-500">No saved listings to show.</p>;
   }
@@ -11,6 +11,7 @@ export default function SavedListingsTab({ savedIds, onSave, listings }) {
       listings={listings}
       savedIds={savedIds}
       onSave={onSave}
+      onUnsave={onUnsave}
     />
   );
 }

@@ -66,7 +66,7 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
               onClick={() =>
                 setOpenDropdown(openDropdown === "location" ? null : "location")
               }
-              className="flex items-center gap-2 text-sm text-blue-500 font-semibold hover:underline hover:cursor-pointer"
+              className="flex items-center gap-2 text-sm text-[#34495e] font-semibold hover:underline hover:cursor-pointer"
             >
               <img src={location} alt="location" className="w-4 h-4" />
               LOCATION
@@ -84,7 +84,7 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
 
           {/* ALL OTHER FILTERS */}
           <div
-            className="flex flex-wrap items-center gap-6 text-sm text-blue-500 font-semibold relative"
+            className="flex flex-wrap items-center gap-6 text-sm text-[#34495e] font-semibold relative"
             ref={filtersDropdownRef}
           >
             {/* PRICE */}
@@ -139,7 +139,7 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
                 }
                 className="flex items-center gap-1 hover:underline hover:cursor-pointer"
               >
-                LION SCORE
+                VELO SCORE
                 <img src={dropdown} alt="dropdown" className="w-3 h-3" />
               </button>
               {openDropdown === "lion" && (
@@ -181,7 +181,7 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
                 onClick={() =>
                   setOpenDropdown(openDropdown === "more" ? null : "more")
                 }
-                className="flex items-center gap-2 border border-gray-300 px-3 py-1 rounded hover:bg-gray-100"
+                className="flex items-center gap-2 border border-gray-300 px-3 py-1 hover:bg-gray-100"
               >
                 <img src={more} alt="more filters" className="w-4 h-4" />
                 MORE
@@ -198,9 +198,9 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
           </div>
 
           {/* SAVE SEARCH BUTTON */}
-          <button className="border border-gray-300 px-4 py-2 rounded font-semibold hover:bg-blue-100 hover:cursor-pointer text-sm flex items-center gap-2">
+          <button className="border border-gray-300 px-4 py-2 font-semibold hover:bg-gray-300 hover:cursor-pointer text-sm flex items-center gap-2">
             <img src={save} alt="save search" className="w-4 h-4" />
-            SAVE SEARCH
+            SAVE PREFERENCES
           </button>
         </div>
       </div>

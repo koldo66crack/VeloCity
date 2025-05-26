@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calculateWalkingDistance } from '../utils/distanceUtils';
 import university from '../assets/svg/university-svgrepo-com.svg';
+import { Link } from 'react-router-dom';
 
 import marker0 from '../assets/markers/marker-0.svg';
 import marker1 from '../assets/markers/marker-1.svg';
@@ -142,6 +143,12 @@ export default function MapView({ listings, activeListing, setActiveListing, onL
                     <span>{listing.bedrooms} bed · {listing.bathrooms} bath · {listing.size_sqft} sqft</span>
                   </div>
                   <div className="text-xs mt-1 text-green-700 font-bold">Rating: {listing.rating}/5</div>
+                  <Link
+                    to={`/listing/${listing.id}`}
+                    className="block mt-2 text-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                  >
+                    View Details
+                  </Link>
                 </div>
               </Popup>
             </Marker>
