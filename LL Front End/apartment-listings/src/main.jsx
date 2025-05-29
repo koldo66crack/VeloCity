@@ -1,18 +1,4 @@
 // src/main.jsx
-// Redirect to canonical domain if needed
-if (
-  window.location.hostname === "www.velocitygems.com" ||
-  window.location.hostname === "lion-lease-frontend.onrender.com"
-) {
-  window.location.replace(
-    "https://velocitygems.com" +
-      window.location.pathname +
-      window.location.search +
-      window.location.hash
-  );
-}
-
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
