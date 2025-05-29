@@ -1,21 +1,4 @@
 // src/main.jsx
-const desiredHost = "velocitygems.com";
-const currentHost = window.location.hostname;
-
-if (
-  currentHost !== desiredHost &&
-  (currentHost === "www.velocitygems.com" || currentHost === "lion-lease-frontend.onrender.com")
-) {
-  window.location.replace(
-    "https://" +
-      desiredHost +
-      window.location.pathname +
-      window.location.search +
-      window.location.hash
-  );
-}
-
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
