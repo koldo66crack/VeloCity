@@ -1,15 +1,20 @@
 // src/main.jsx
+const desiredHost = "velocitygems.com";
+const currentHost = window.location.hostname;
+
 if (
-  window.location.hostname === "www.velocitygems.com" ||
-  window.location.hostname === "lion-lease-frontend.onrender.com"
+  currentHost !== desiredHost &&
+  (currentHost === "www.velocitygems.com" || currentHost === "lion-lease-frontend.onrender.com")
 ) {
   window.location.replace(
-    "https://velocitygems.com" +
+    "https://" +
+      desiredHost +
       window.location.pathname +
       window.location.search +
       window.location.hash
   );
 }
+
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
