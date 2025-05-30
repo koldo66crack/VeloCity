@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
+import { supabase } from "../lib/supabaseClient"; // Make sure this path is correct!
 import background from "../assets/img/background_image.jpg";
 import Navbar from "../components/Navbar";
 import CountdownTimer from "../components/CountdownTimer";
@@ -9,11 +10,53 @@ const TYPEWRITER_TEXT = "You’re at the right place, at the right time.";
 const HERO_PARA =
   "Gives you early access to hidden NYC listings—apartments that never make it to the big platforms.";
 
+function useQuery() {
+  return new URLSearchParams(window.location.search);
+}
+
+// --- Modal component ---
+function Modal({ title, message, type = "info", onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-8 text-center relative">
+        <button
+          className="absolute top-2 right-3 text-2xl text-gray-400 hover:text-gray-600"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <h2
+          className={`text-2xl font-bold mb-3 ${
+            type === "success"
+              ? "text-green-600"
+              : type === "error"
+              ? "text-red-500"
+              : "text-blue-500"
+          }`}
+        >
+          {title}
+        </h2>
+        <p className="mb-3">{message}</p>
+        {type === "success" && (
+          <a
+            href="/login"
+            className="inline-block mt-4 bg-[#34495e] hover:bg-gray-800 text-white px-6 py-2 rounded-lg font-semibold transition"
+          >
+            Go to Login
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [typedText, setTypedText] = useState("");
+  const [modal, setModal] = useState(null);
+  const query = useQuery();
 
   // --- Typewriter Effect for HERO LINE ---
-  const [typedText, setTypedText] = useState("");
   useEffect(() => {
     let currentChar = 0;
     let interval = setInterval(() => {
@@ -34,6 +77,63 @@ export default function LandingPage() {
       })),
     []
   );
+
+  // --- Confirmation Link Logic ---
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const token = query.get("token");
+    const type = query.get("type");
+    // Check hash fragment for errors (Supabase puts errors here)
+    const hashParams = parseHashParams(window.location.hash);
+
+    if (type === "signup" && token) {
+      // Confirm the user
+      supabase.auth
+        .verifyOtp({ type: "signup", token })
+        .then(({ data, error }) => {
+          if (!error) {
+            setModal({
+              title: "Congratulations!",
+              message:
+                "Your account has been confirmed. Login into your account!",
+              type: "success",
+            });
+          } else if (
+            error.message.includes("used") ||
+            error.message.toLowerCase().includes("invalid or expired")
+          ) {
+            setModal({
+              title: "Already Confirmed",
+              message: "This account has already been confirmed!",
+              type: "info",
+            });
+          } else {
+            setModal({
+              title: "Error",
+              message: error.message || "Something went wrong.",
+              type: "error",
+            });
+          }
+          // Clean up query params
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        });
+    } else if (hashParams.error_description) {
+      // Show error from Supabase hash params
+      setModal({
+        title: "Error",
+        message: decodeURIComponent(
+          hashParams.error_description.replace(/\+/g, " ")
+        ),
+        type: "error",
+      });
+      // Clean up hash fragment for clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []); // only runs on mount
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -108,7 +208,7 @@ export default function LandingPage() {
             <img src={velocity} className="w-50 h-10" alt="" /> {HERO_PARA}
           </p>
 
-          {/* --- Countdown Timer --- */}
+          {/* --- Countdown Timer (commented out for now) --- */}
           {/* <CountdownTimer label="NYC peak rental season starts in:" /> */}
 
           {/* --- Button Stack --- */}
@@ -130,6 +230,16 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
+
+      {/* Confirmation Modal */}
+      {modal && (
+        <Modal
+          title={modal.title}
+          message={modal.message}
+          type={modal.type}
+          onClose={() => setModal(null)}
+        />
+      )}
 
       {/* Styles */}
       <style jsx>{`
