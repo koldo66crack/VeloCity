@@ -11,6 +11,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import PublicLayout from "./layouts/PublicLayout";
 import MemberLayout from "./layouts/MemberLayout";
+import EarlyBirdLaunchpad from "./pages/EarlyBirdLaunchpad";
+import SeniorBlueprint from "./pages/SeniorBlueprint";
+import ComparePage from "./pages/ComparePage";
+
+import GuidePage from "./pages/GuidePage";
 
 export default function App() {
   return (
@@ -46,6 +51,38 @@ export default function App() {
                 <DashboardPage />
               </MemberLayout>
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/early-bird"
+          element={
+            <PublicLayout>
+              <EarlyBirdLaunchpad />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/senior-blueprint"
+          element={
+            <PublicLayout>
+              <SeniorBlueprint />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/compare"
+          element={
+            <PublicLayout>
+              <ComparePage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/guide"
+          element={
+            <PublicLayout>
+              <GuidePage />
+            </PublicLayout>
           }
         />
         <Route path="/listing/:id" element={<ListingDetailPage />} />

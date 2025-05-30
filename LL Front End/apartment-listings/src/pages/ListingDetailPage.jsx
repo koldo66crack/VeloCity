@@ -2,7 +2,6 @@
 import { useParams } from "react-router-dom";
 import listings from "../data/combined_listings_with_lionscore.json";
 import { calculateWalkingDistance } from "../utils/distanceUtils";
-
 import MapViewGoogle from "../components/MapViewGoogle";
 
 import bed from "../assets/svg/bed-double-svgrepo-com.svg";
@@ -39,14 +38,15 @@ export default function ListingDetailPage() {
   const price = listing.net_effective_price || listing.price;
   const pricePerBed =
     listing.bedrooms && listing.bedrooms > 0
-      ? `$${Math.round(price / listing.bedrooms)} / bed`
-      : "Bed info unavailable";
+      ? price / listing.bedrooms
+      : null;
 
   const fullAddress = `${listing.addr_street || ""} ${
     listing.addr_unit || ""
   }, ${listing.addr_city || ""}, ${listing.addr_state || ""} ${
     listing.addr_zip || ""
   }`;
+
   const complaints = listing.building_complaints || {};
   const complaintEntries = Object.entries(complaints).filter(
     ([_, count]) => count > 0
@@ -62,72 +62,150 @@ export default function ListingDetailPage() {
       <div className="flex flex-col md:flex-row md:items-start gap-8">
         <div className="md:w-1/2 space-y-6">
           <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
+          
           <div className="text-xl font-semibold text-gray-700">
-            Price: <span className="text-2xl font-bold text-[#34495e]">${price}</span>
+            Price:{" "}
+            <span className="text-2xl font-bold text-[#34495e]">
+              ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
           </div>
-          <div className="text-sm text-green-700 mb-4">{pricePerBed}</div>
+
+          <div className="text-md font-medium mb-2">
+            <span className="text-gray-700">Price per Bed:</span>{" "}
+            {listing.bedrooms === 0 ? (
+              <span className="text-green-700 font-bold">
+                ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                <span className="text-xs text-gray-500">(Studio)</span>
+              </span>
+            ) : listing.bedrooms && listing.bedrooms > 0 ? (
+              <span className="text-green-700 font-bold">
+                ${Number(pricePerBed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            ) : (
+              <span className="text-gray-400 italic">Not available</span>
+            )}
+          </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-lg font-medium text-gray-800 border-t pt-4 mt-2">
             <span className="flex items-center gap-2">
-              <img src={bed} alt="Beds" className="w-5 h-5" /> {listing.bedrooms || "—"} bed
+              <img src={bed} alt="Beds" className="w-5 h-5" />{" "}
+              {listing.bedrooms === 0
+                ? "Studio"
+                : listing.bedrooms !== undefined
+                ? `${listing.bedrooms} bed`
+                : "—"}
             </span>
             <span className="flex items-center gap-2">
-              <img src={bath} alt="Baths" className="w-5 h-5" /> {listing.bathrooms || "—"} bath
+              <img src={bath} alt="Baths" className="w-5 h-5" />{" "}
+              {listing.bathrooms !== undefined ? listing.bathrooms : "—"} bath
             </span>
             <span className="flex items-center gap-2">
-              <img src={size} alt="Size" className="w-5 h-5" /> {listing.size_sqft || "—"} ft²
+              <img src={size} alt="Size" className="w-5 h-5" />{" "}
+              {listing.size_sqft
+                ? Number(listing.size_sqft).toFixed(2)
+                : "—"}{" "}
+              ft²
             </span>
             <span className="flex items-center gap-2">
-              <img src={walking} alt="Walking" className="w-5 h-5" /> {distance} mi to Columbia
+              <img src={walking} alt="Walking" className="w-5 h-5" /> {distance}{" "}
+              mi to Columbia
             </span>
           </div>
 
           {listing.LionScore && (
             <div className="mt-4">
-              <span className="block text-sm font-medium text-gray-500 mb-1">VeloScore™</span>
-              <div className={`text-lg font-bold ${lionScoreColors[listing.LionScore]}`}>
+              <span className="block text-sm font-medium text-gray-500 mb-1">
+                VeloScore™
+              </span>
+              <div
+                className={`text-lg font-bold ${
+                  lionScoreColors[listing.LionScore]
+                }`}
+              >
                 {listing.LionScore}
               </div>
             </div>
           )}
 
-          <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-lg">
-            <img
-              src={listing.photo_url || listing.medium_image_uri}
-              alt={`Image ${imageIndex + 1}`}
-              onError={(e) =>
-                (e.target.src =
-                  "https://via.placeholder.com/800x400?text=No+Image")
-              }
-              className="w-full h-full object-cover"
-            />
-            <button
-              onClick={() =>
-                setImageIndex((prev) => (prev === 0 ? 4 : prev - 1))
-              }
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
-            >
-              ⟨
-            </button>
-            <button
-              onClick={() =>
-                setImageIndex((prev) => (prev === 4 ? 0 : prev + 1))
-              }
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
-            >
-              ⟩
-            </button>
+          <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-lg bg-gray-100">
+            {Array.isArray(listing.photos_url) &&
+            listing.photos_url.length > 0 ? (
+              <>
+                <img
+                  src={listing.photos_url[imageIndex]}
+                  alt={`Image ${imageIndex + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-300"
+                />
+                {listing.photos_url.length > 1 && (
+                  <>
+                    {/* Previous */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setImageIndex((prev) =>
+                          prev === 0 ? listing.photos_url.length - 1 : prev - 1
+                        );
+                      }}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow"
+                    >
+                      ⟨
+                    </button>
+                    {/* Next */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setImageIndex((prev) =>
+                          prev === listing.photos_url.length - 1 ? 0 : prev + 1
+                        );
+                      }}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow"
+                    >
+                      ⟩
+                    </button>
+                  </>
+                )}
+                {/* Indicator Dots */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {listing.photos_url.map((_, idx) => (
+                    <span
+                      key={idx}
+                      className={`inline-block w-2 h-2 rounded-full ${
+                        idx === imageIndex ? "bg-[#34495e]" : "bg-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <img
+                src={
+                  listing.photo_url ||
+                  listing.medium_image_uri ||
+                  "https://via.placeholder.com/800x400?text=No+Image"
+                }
+                alt="No photos"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 space-y-2">
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">Description</h2>
+            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">
+              Description
+            </h2>
             <p className="text-sm text-gray-700 leading-relaxed">
               {listing.description || "No description provided."}
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 space-y-2">
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">Building Complaints</h2>
+            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">
+              Building Complaints
+            </h2>
             {hasVisibleComplaints ? (
               <ul className="list-disc pl-5 text-sm text-gray-700">
                 {complaintEntries

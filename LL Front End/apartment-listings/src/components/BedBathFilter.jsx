@@ -64,7 +64,7 @@ export default function BedBathFilter({
         <button
           className="bg-[#34495e] text-white px-4 py-1 hover:cursor-pointer"
           onClick={() => {
-            const parsedBed = tempBed === "Studio" ? 0.5 : tempBed;
+            const parsedBed = tempBed === "Studio" ? 0 : tempBed;
             const parsedBath = tempBath.replace("+", "");
             setFilters((prev) => ({
               ...prev,

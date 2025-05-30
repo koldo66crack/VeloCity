@@ -54,7 +54,6 @@ export default function ListingCard({
   onUnsave,
   onGroupSave,
   onView,
-  // --- Voting props ---
   votes = [],
   onVote = () => {},
   nameMap = {},
@@ -69,7 +68,11 @@ export default function ListingCard({
 
   const [showSaveModal, setShowSaveModal] = useState(false);
 
-  // --- Voting State ---
+  // Carousel state for photo gallery
+  const images = listing.photos_url || [];
+  const [currentImage, setCurrentImage] = useState(0);
+
+  // Voting
   const upvoters = votes.filter((v) => v.vote > 0);
   const downvoters = votes.filter((v) => v.vote < 0);
   const currentUserVote =
@@ -77,11 +80,11 @@ export default function ListingCard({
 
   const handleVoteClick = (voteValue) => {
     if (!user) return openAuthModal();
-    if (currentUserVote === voteValue) return; // already voted
+    if (currentUserVote === voteValue) return;
     onVote(listing.id, voteValue);
   };
 
-  // --- Save & Unsave Logic ---
+  // Save/Unsave logic
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -141,7 +144,7 @@ export default function ListingCard({
       await onUnsave(listing.id);
     } catch (err) {
       console.error("Error unsaving listing:", err);
-      setSaved(true); // revert if failed
+      setSaved(true);
     }
   };
 
@@ -162,13 +165,29 @@ export default function ListingCard({
       : null;
 
   const price = listing.net_effective_price || listing.price;
-  const pricePerBed = listing.bedrooms
-    ? `$${Math.round(price / listing.bedrooms)} / bed`
-    : "—";
 
   const displayMarketplaces = Array.isArray(listing.marketplace)
     ? listing.marketplace.join(", ")
     : listing.marketplace || listing.listed_by || "unknown";
+
+  // Carousel navigation handlers
+  const goPrev = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goNext = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  // Studio display helper
+  const bedDisplay =
+    !listing.bedrooms || Number(listing.bedrooms) === 0
+      ? "Studio"
+      : `${listing.bedrooms} bed`;
 
   return (
     <div
@@ -196,13 +215,40 @@ export default function ListingCard({
         onClick={handleView}
         className="block"
       >
-        {listing.photo_url && (
-          <div className="h-48 bg-gray-100 overflow-hidden group">
+        {/* --- IMAGE CAROUSEL --- */}
+        {images.length > 0 && (
+          <div className="relative h-48 bg-gray-100 overflow-hidden group flex items-center justify-center">
             <img
-              src={listing.photo_url}
+              src={images[currentImage]}
               alt={listing.title}
               className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
             />
+            {images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white rounded-full px-2 py-1 shadow"
+                  onClick={goPrev}
+                >
+                  ‹
+                </button>
+                <button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white rounded-full px-2 py-1 shadow"
+                  onClick={goNext}
+                >
+                  ›
+                </button>
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1">
+                  {images.map((_, idx) => (
+                    <span
+                      key={idx}
+                      className={`inline-block w-2 h-2 rounded-full ${
+                        idx === currentImage ? "bg-blue-500" : "bg-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -212,17 +258,23 @@ export default function ListingCard({
           </h3>
 
           <div className="text-xl font-bold">${price}</div>
-          <div className="text-sm text-green-700">{pricePerBed}</div>
-
+          <div className="text-sm text-green-700">
+            {`Per Bed: $${Number(listing.price_per_bed).toFixed(2)}`}
+          </div>
+          
           <div className="flex items-center text-sm text-gray-600 space-x-4">
             <span className="flex items-center gap-1">
-              <img src={bed} className="w-4 h-4" /> {listing.bedrooms} bed
+              <img src={bed} className="w-4 h-4" />
+              {bedDisplay}
             </span>
             <span className="flex items-center gap-1">
               <img src={bath} className="w-4 h-4" /> {listing.bathrooms} bath
             </span>
             <span className="flex items-center gap-1">
-              <img src={size} className="w-4 h-4" /> {listing.size_sqft || "—"}{" "}
+              <img src={size} className="w-4 h-4" />
+              {listing.size_sqft
+                ? Number(listing.size_sqft).toFixed(2)
+                : "—"}{" "}
               ft²
             </span>
           </div>
