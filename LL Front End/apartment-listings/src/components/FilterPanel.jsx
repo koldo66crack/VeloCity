@@ -10,8 +10,15 @@ import BedBathFilter from "./BedBathFilter";
 import LionScoreFilter from "./LionScoreFilter";
 import MoreFilters from "./MoreFilters";
 import MarketplaceFilter from "./MarketplaceFilter";
+import TooltipInfo from "./TooltipInfo";
 
-export default function FilterPanel({ filters, setFilters, allAreas }) {
+export default function FilterPanel({
+  listings,
+  filters,
+  setFilters,
+  allAreas,
+  allMarketplaces,
+}) {
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const [tempAreas, setTempAreas] = useState(filters.areas);
@@ -28,7 +35,9 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
     onlyFeatured: filters.onlyFeatured,
   });
 
-  const [tempMarketplaces, setTempMarketplaces] = useState(filters.marketplaces);
+  const [tempMarketplaces, setTempMarketplaces] = useState(
+    filters.marketplaces
+  );
 
   const locationDropdownRef = useRef();
   const filtersDropdownRef = useRef();
@@ -69,7 +78,7 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
               className="flex items-center gap-2 text-sm text-[#34495e] font-semibold hover:underline hover:cursor-pointer"
             >
               <img src={location} alt="location" className="w-4 h-4" />
-              LOCATION
+              NEIGHBORHOOD
             </button>
             {openDropdown === "location" && (
               <LocationFilter
@@ -141,6 +150,14 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
               >
                 VELO SCORE
                 <img src={dropdown} alt="dropdown" className="w-3 h-3" />
+                <TooltipInfo
+                  text={`VeloScore™ tells you if the apartment's price matches its value:\n
+- ✅ Reasonable: You are good to go!
+- 🔥 Steal Deal: Jump on this—it's a rare find!
+- 🚨 Too Cheap to Be True: Be careful, something's off.
+- 💸 Overpriced: You're paying too much for what you get.
+      `}
+                />
               </button>
               {openDropdown === "lion" && (
                 <LionScoreFilter
@@ -162,11 +179,13 @@ export default function FilterPanel({ filters, setFilters, allAreas }) {
                 }
                 className="flex items-center gap-1 hover:underline hover:cursor-pointer"
               >
-                MARKETPLACE
+                SOURCE
                 <img src={dropdown} alt="dropdown" className="w-3 h-3" />
+                <TooltipInfo text="Where this listing is originally posted (e.g., StreetEasy, Compass, RentHop, etc.)." />
               </button>
               {openDropdown === "marketplace" && (
                 <MarketplaceFilter
+                  allMarketplaces={allMarketplaces}
                   tempMarketplaces={tempMarketplaces}
                   setTempMarketplaces={setTempMarketplaces}
                   setFilters={setFilters}

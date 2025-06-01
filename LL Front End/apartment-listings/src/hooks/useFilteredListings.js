@@ -1,31 +1,65 @@
 // src/hooks/useFilteredListings.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import enrichedListings from "../data/combined_listings_with_lionscore.json";
 
-export const DEFAULT_FILTERS = {
-  minPrice: null,
-  maxPrice: null,
-  bedrooms: "any",
-  bathrooms: "any",
-  lionScores: [
-    "✅ Reasonable",
-    "🔥 Steal Deal",
-    "🚨 Too Cheap to Be True",
-    "💸 Overpriced",
-  ],
-  marketplaces: ["Compass", "RentHop", "StreetEasy"],
-  maxComplaints: 500,
-  onlyNoFee: false,
-  onlyFeatured: false,
-  areas: [],
-};
+// --- UTILITIES ---
+function normalizeAreaName(area) {
+  // "UPPER WEST SIDE" → "Upper West Side"
+  if (!area) return "";
+  return area
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractAllMarketplaces(listings) {
+  const set = new Set();
+  listings.forEach(l => {
+    if (Array.isArray(l.marketplace)) {
+      l.marketplace.forEach(mp => set.add(mp));
+    } else if (typeof l.marketplace === "string") {
+      set.add(l.marketplace);
+    }
+  });
+  return Array.from(set).sort();
+}
+
+function extractAllAreas(listings) {
+  const normSet = new Set();
+  listings.forEach(l => {
+    const raw = l.orig_area_name || l.area_name;
+    if (raw) normSet.add(normalizeAreaName(raw));
+  });
+  return Array.from(normSet).sort();
+}
+
+export function getDefaultFilters(listings) {
+  return {
+    minPrice: null,
+    maxPrice: null,
+    bedrooms: "any",
+    bathrooms: "any",
+    lionScores: [
+      "✅ Reasonable",
+      "🔥 Steal Deal",
+      "🚨 Too Cheap to Be True",
+      "💸 Overpriced",
+    ],
+    marketplaces: extractAllMarketplaces(listings), 
+    maxComplaints: 500,
+    onlyNoFee: false,
+    onlyFeatured: false,
+    areas: [],
+  };
+}
 
 function applyFilters(listings, filters) {
+  if (!filters) return listings;
   return listings.filter((l) => {
     const price = l.price || l.net_effective_price || 0;
     const beds =
-      l.bedrooms ??
-      (l.rooms_description?.toLowerCase().includes("studio") ? 0.5 : null);
+      l.bedrooms ?? (l.rooms_description?.toLowerCase().includes("studio") ? 0.5 : null);
     const baths = l.bathrooms ?? 0;
     const complaints =
       Object.values(l.building_complaints || {}).reduce((a, b) => a + b, 0);
@@ -67,9 +101,11 @@ function applyFilters(listings, filters) {
     if (filters.onlyNoFee && !l.no_fee) return false;
     if (filters.onlyFeatured && !l.is_featured) return false;
 
+    // --- THIS IS THE KEY MODIFICATION ---
+    // Only show if the normalized area is in the filters
     if (
       filters.areas.length > 0 &&
-      !filters.areas.includes(l.area_name)
+      !filters.areas.includes(normalizeAreaName(l.orig_area_name || l.area_name))
     )
       return false;
 
@@ -95,9 +131,8 @@ export function useFilteredListings(filters) {
     setFilteredListings(applyFilters(allListings, filters));
   }, [allListings, filters]);
 
-  const allAreas = Array.from(
-    new Set(allListings.map((l) => l.area_name))
-  );
+  const allAreas = useMemo(() => extractAllAreas(allListings), [allListings]);
+  const allMarketplaces = useMemo(() => extractAllMarketplaces(allListings), [allListings]);
 
-  return [filteredListings, allAreas];
+  return [filteredListings, allAreas, allMarketplaces];
 }

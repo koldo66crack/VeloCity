@@ -91,13 +91,14 @@ export default function LandingPage() {
           {/* --- Mini Paragraph --- */}
           <p
             className="
-              text-base sm:text-lg font-normal 
-              bg-white/10 backdrop-blur-lg
-              px-4 py-2 max-w-md
-              text-white/90 shadow-md
-              mb-2 border-l-4 border-pink-300
-              transition-all duration-500 flex items-center text-justify
-              "
+    text-base sm:text-lg font-normal 
+    bg-white/10 backdrop-blur-lg
+    px-4 py-2 max-w-md
+    text-white/90 shadow-md
+    mb-2 border-l-4 border-pink-300
+    transition-all duration-500
+    flex items-center
+    "
             style={{
               marginTop: "0.2em",
               letterSpacing: "0.01em",
@@ -105,7 +106,12 @@ export default function LandingPage() {
               fontWeight: 400,
             }}
           >
-            <img src={velocity} className="w-50 h-10" alt="" /> {HERO_PARA}
+            <img
+              src={velocity}
+              className="h-7 w-auto mr-2 align-middle"
+              alt="VeloCity Logo"
+            />
+            {HERO_PARA}
           </p>
 
           {/* --- Countdown Timer --- */}

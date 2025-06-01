@@ -216,7 +216,7 @@ export default function ListingCard({
         className="block"
       >
         {/* --- IMAGE CAROUSEL --- */}
-        {images.length > 0 && (
+        {images.length > 0 ? (
           <div className="relative h-48 bg-gray-100 overflow-hidden group flex items-center justify-center">
             <img
               src={images[currentImage]}
@@ -250,6 +250,10 @@ export default function ListingCard({
               </>
             )}
           </div>
+        ) : (
+          <div className="flex items-center justify-center h-48 bg-gray-50 text-gray-400 text-center text-sm italic">
+            Oops, we couldn't get the images for this listing.
+          </div>
         )}
 
         <div className="p-4 space-y-2">
@@ -261,7 +265,7 @@ export default function ListingCard({
           <div className="text-sm text-green-700">
             {`Per Bed: $${Number(listing.price_per_bed).toFixed(2)}`}
           </div>
-          
+
           <div className="flex items-center text-sm text-gray-600 space-x-4">
             <span className="flex items-center gap-1">
               <img src={bed} className="w-4 h-4" />

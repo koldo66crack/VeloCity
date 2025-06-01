@@ -6,8 +6,21 @@ import ListingGrid from "../components/ListingGrid";
 import MapView from "../components/MapViewGoogle";
 import {
   useFilteredListings,
-  DEFAULT_FILTERS,
+  getDefaultFilters,
 } from "../hooks/useFilteredListings";
+
+// Helper: Checks if a listing's coordinates are inside map bounds
+function isListingInBounds(listing, bounds) {
+  if (!bounds || !listing.addr_lat || !listing.addr_lon) return true;
+  const lat = Number(listing.addr_lat);
+  const lon = Number(listing.addr_lon);
+  return (
+    lat <= bounds.north &&
+    lat >= bounds.south &&
+    lon <= bounds.east &&
+    lon >= bounds.west
+  );
+}
 
 // Ensure this env var is defined in your deploy settings
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -16,8 +29,8 @@ export default function MemberHome() {
   const { uid } = useParams();
   const { openAuthModal } = useUI();
 
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [origFilters, setOrigFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(null);
+  const [origFilters, setOrigFilters] = useState(null);
   const [prefLoaded, setPrefLoaded] = useState(false);
 
   const [savedIds, setSavedIds] = useState([]);
@@ -26,11 +39,22 @@ export default function MemberHome() {
   const [group, setGroup] = useState(null);
   const [groupSavedIds, setGroupSavedIds] = useState([]);
 
-  const [listings, allAreas] = useFilteredListings(filters);
+  const [mapBounds, setMapBounds] = useState(null); // <- NEW: Store map bounds
 
-  // Load preferences, personal saved, viewed, group info, and group saved
+  const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
+
+  // ---- Dynamically initialize filters with live marketplace data ----
   useEffect(() => {
-    if (!uid) return;
+    if (!filters && allMarketplaces && allMarketplaces.length > 0 && listings.length > 0) {
+      const defaultFilters = getDefaultFilters(listings);
+      setFilters(defaultFilters);
+      setOrigFilters(defaultFilters);
+    }
+  }, [filters, allMarketplaces, listings]);
+
+  // ---- Load user preferences, personal/group saved, viewed ----
+  useEffect(() => {
+    if (!uid || !filters) return;
     (async () => {
       // Preferences
       const prefRes = await fetch(`${BASE_URL}/api/preferences/${uid}`);
@@ -38,22 +62,22 @@ export default function MemberHome() {
         const data = await prefRes.json();
         if (data) {
           const loaded = {
-            minPrice: data.minBudget ?? DEFAULT_FILTERS.minPrice,
-            maxPrice: data.maxBudget ?? DEFAULT_FILTERS.maxPrice,
+            minPrice: data.minBudget ?? filters.minPrice,
+            maxPrice: data.maxBudget ?? filters.maxPrice,
             bedrooms:
               data.bedrooms != null
                 ? String(data.bedrooms)
-                : DEFAULT_FILTERS.bedrooms,
+                : filters.bedrooms,
             bathrooms:
               data.bathrooms != null
                 ? String(data.bathrooms)
-                : DEFAULT_FILTERS.bathrooms,
-            lionScores: data.lionScores ?? DEFAULT_FILTERS.lionScores,
-            marketplaces: data.marketplaces ?? DEFAULT_FILTERS.marketplaces,
-            maxComplaints: data.maxComplaints ?? DEFAULT_FILTERS.maxComplaints,
-            onlyNoFee: data.onlyNoFee ?? DEFAULT_FILTERS.onlyNoFee,
-            onlyFeatured: data.onlyFeatured ?? DEFAULT_FILTERS.onlyFeatured,
-            areas: data.areas ?? DEFAULT_FILTERS.areas,
+                : filters.bathrooms,
+            lionScores: data.lionScores ?? filters.lionScores,
+            marketplaces: data.marketplaces ?? filters.marketplaces,
+            maxComplaints: data.maxComplaints ?? filters.maxComplaints,
+            onlyNoFee: data.onlyNoFee ?? filters.onlyNoFee,
+            onlyFeatured: data.onlyFeatured ?? filters.onlyFeatured,
+            areas: data.areas ?? filters.areas,
           };
           setFilters(loaded);
           setOrigFilters(loaded);
@@ -89,11 +113,11 @@ export default function MemberHome() {
         }
       }
     })();
-  }, [uid]);
+  }, [uid, filters]);
 
-  // Save preferences on change
+  // ---- Save preferences on change ----
   useEffect(() => {
-    if (!prefLoaded) return;
+    if (!prefLoaded || !filters || !origFilters) return;
     if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
       if (window.confirm("Save new preferences?")) {
         const payload = {
@@ -122,7 +146,7 @@ export default function MemberHome() {
     }
   }, [filters, origFilters, prefLoaded, uid]);
 
-  // Handlers
+  // ---- Handlers ----
   const handleSave = (listingId) => {
     if (!uid) return openAuthModal();
     const idStr = String(listingId);
@@ -179,23 +203,34 @@ export default function MemberHome() {
     setGroupSavedIds((prev) => [...new Set([...prev, idStr])]);
   };
 
-  // Combine personal + group saved for UI highlighting
   const combinedSavedIds = group
     ? Array.from(new Set([...savedIds, ...groupSavedIds]))
     : savedIds;
 
+  // ---- New: Filter by map bounds ----
+  const visibleListings = mapBounds
+    ? listings.filter((l) => isListingInBounds(l, mapBounds))
+    : listings;
+
+  if (!filters) return null;
+
   return (
     <div className="pt-10">
       <FilterPanel
+        listings={listings}
         filters={filters}
         setFilters={setFilters}
         allAreas={allAreas}
+        allMarketplaces={allMarketplaces}
       />
-      <div className="max-w-7xl mt-6 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex lg:flex-row gap-6 h-[calc(100vh-200px)]">
+      <div
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]"
+        style={{ height: "calc(100vh - 128px)" }}
+      >
+        <div className="flex lg:flex-row gap-6 h-full">
           <div className="lg:w-1/2 h-full overflow-y-auto pr-2">
             <ListingGrid
-              listings={listings}
+              listings={visibleListings}
               savedIds={combinedSavedIds}
               viewedIds={viewedIds}
               onSave={handleSave}
@@ -204,7 +239,7 @@ export default function MemberHome() {
               onView={handleView}
             />
           </div>
-          <div className="lg:w-1/2 h-full">
+          <div className="lg:w-1/2 h-full min-h-[400px]">
             <MapView
               listings={listings}
               activeListing={null}
@@ -213,6 +248,7 @@ export default function MemberHome() {
                 handleView(l.id);
                 window.open(`/listing/${l.id}`);
               }}
+              onBoundsChange={setMapBounds} // <--- THE MAGIC LINE!
             />
           </div>
         </div>

@@ -1,18 +1,16 @@
 // src/components/MapViewGoogle.jsx
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
   Marker,
 } from "@react-google-maps/api";
 import Supercluster from "supercluster";
-import { listingsToGeojson } from "../utils/listingsToGeojson"; // <-- import your util
+import { listingsToGeojson } from "../utils/listingsToGeojson";
 import { Link } from "react-router-dom";
 
 const COLUMBIA_UNIVERSITY_COORDS = { lat: 40.807384, lng: -73.963036 };
 const containerStyle = { width: "100%", height: "100%" };
-
-// Custom marker color and style
 const MARKER_COLOR = "#34495e";
 const MARKER_TEXT_COLOR = "#fff";
 
@@ -21,7 +19,10 @@ function getMarkerSize(count) {
   return Math.max(30, Math.min(70, 25 + 10 * Math.log10(count)));
 }
 
-export default function MapViewGoogle({ listings }) {
+export default function MapViewGoogle({
+  listings,
+  onBoundsChange, // <-- new prop
+}) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   });
@@ -39,11 +40,11 @@ export default function MapViewGoogle({ listings }) {
     return cluster;
   }, [geojson]);
 
-  // Track map bounds, zoom, clusters, and active marker
+  // Track map reference, bounds, zoom, and active marker
   const [mapRef, setMapRef] = useState(null);
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(15);
-  const [activeBuilding, setActiveBuilding] = useState(null); // building marker popup
+  const [activeBuilding, setActiveBuilding] = useState(null);
 
   // Compute clusters for current view
   const clusters = useMemo(() => {
@@ -54,7 +55,25 @@ export default function MapViewGoogle({ listings }) {
     );
   }, [bounds, zoom, supercluster]);
 
-  if (!isLoaded) return <div className="p-4">🗺️ Loading map…</div>;
+  // Utility to get and emit bounds
+  const emitBounds = (mapInstance) => {
+    if (!mapInstance) return;
+    const b = mapInstance.getBounds();
+    if (b) {
+      const newBounds = {
+        north: b.getNorthEast().lat(),
+        east: b.getNorthEast().lng(),
+        south: b.getSouthWest().lat(),
+        west: b.getSouthWest().lng(),
+      };
+      setBounds(newBounds);
+      if (onBoundsChange) onBoundsChange(newBounds); // <-- parent callback!
+    }
+    setZoom(mapInstance.getZoom());
+  };
+
+  if (!isLoaded)
+    return <div className="p-4">🗺️ Loading map…</div>;
   if (!listings.length)
     return (
       <div className="h-full w-full overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -69,27 +88,11 @@ export default function MapViewGoogle({ listings }) {
       zoom={15}
       onLoad={map => {
         setMapRef(map);
-        // Initial bounds
-        const b = map.getBounds();
-        if (b)
-          setBounds({
-            north: b.getNorthEast().lat(),
-            east: b.getNorthEast().lng(),
-            south: b.getSouthWest().lat(),
-            west: b.getSouthWest().lng(),
-          });
+        emitBounds(map);
       }}
       onBoundsChanged={() => {
         if (!mapRef) return;
-        const b = mapRef.getBounds();
-        if (b)
-          setBounds({
-            north: b.getNorthEast().lat(),
-            east: b.getNorthEast().lng(),
-            south: b.getSouthWest().lat(),
-            west: b.getSouthWest().lng(),
-          });
-        setZoom(mapRef.getZoom());
+        emitBounds(mapRef);
       }}
       options={{
         fullscreenControl: false,
@@ -115,27 +118,6 @@ export default function MapViewGoogle({ listings }) {
         const isCluster = !!cluster.properties.cluster;
         const count = isCluster ? cluster.properties.point_count : cluster.properties.count;
         const markerSize = getMarkerSize(count);
-
-        // Style for our custom marker
-        const markerHtml = `
-          <div style="
-            background: ${MARKER_COLOR};
-            color: ${MARKER_TEXT_COLOR};
-            width: ${markerSize}px;
-            height: ${markerSize}px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: ${Math.max(13, markerSize / 3)}px;
-            border: 2.5px solid #fff;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-            ">
-            <div>${count} unit${count > 1 ? "s" : ""}</div>
-          </div>
-        `;
 
         return (
           <Marker
@@ -174,7 +156,7 @@ export default function MapViewGoogle({ listings }) {
             }}
             title={
               isCluster
-                ? `${count} units (zoom in for details)`
+                ? `${count} buildings (zoom in for details)`
                 : `${cluster.properties.addr_street} (${count} unit${
                     count > 1 ? "s" : ""
                   })`
@@ -222,7 +204,7 @@ export default function MapViewGoogle({ listings }) {
                 ${listing.price} – {listing.title}
               </div>
               <div className="text-sm text-gray-600">
-                {listing.bedrooms || "Studio"}bd · {listing.bathrooms}ba ·{" "}
+                {listing.bedrooms === 0 ? "Studio" : listing.bedrooms + "bd"} · {listing.bathrooms}ba ·{" "}
                 {listing.size_sqft ? `${Number(listing.size_sqft).toFixed(2)} ft²` : "—"}
               </div>
               <div className="text-xs text-gray-500">{listing.LionScore}</div>
