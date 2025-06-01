@@ -1,10 +1,11 @@
-// src/hooks/useFilteredListings.js
 import { useState, useEffect, useMemo } from "react";
 import enrichedListings from "../data/combined_listings_with_lionscore.json";
+import { calculateWalkingDistance } from "../utils/distanceUtils";
 
-// --- UTILITIES ---
+// --- Utilities ---
+
+// Normalizes area names (case-insensitive, trims, etc.)
 function normalizeAreaName(area) {
-  // "UPPER WEST SIDE" → "Upper West Side"
   if (!area) return "";
   return area
     .toLowerCase()
@@ -13,11 +14,12 @@ function normalizeAreaName(area) {
     .trim();
 }
 
+// Extract unique marketplaces from listings
 function extractAllMarketplaces(listings) {
   const set = new Set();
-  listings.forEach(l => {
+  listings.forEach((l) => {
     if (Array.isArray(l.marketplace)) {
-      l.marketplace.forEach(mp => set.add(mp));
+      l.marketplace.forEach((mp) => set.add(mp));
     } else if (typeof l.marketplace === "string") {
       set.add(l.marketplace);
     }
@@ -25,15 +27,58 @@ function extractAllMarketplaces(listings) {
   return Array.from(set).sort();
 }
 
+// Extract unique, normalized area names from listings
 function extractAllAreas(listings) {
   const normSet = new Set();
-  listings.forEach(l => {
+  listings.forEach((l) => {
     const raw = l.orig_area_name || l.area_name;
     if (raw) normSet.add(normalizeAreaName(raw));
   });
   return Array.from(normSet).sort();
 }
 
+// Sort listings by price or distance (or none, for original shuffle)
+const COLUMBIA_COORDS = { lat: 40.816151, lng: -73.943653 };
+function sortListings(listings, sortOption) {
+  if (!sortOption || sortOption === "original") {
+    // No sorting, preserve order
+    return listings;
+  }
+  return [...listings].sort((a, b) => {
+    const priceA = a.net_effective_price || a.price || 0;
+    const priceB = b.net_effective_price || b.price || 0;
+    const distA = calculateWalkingDistance(
+      COLUMBIA_COORDS.lat,
+      COLUMBIA_COORDS.lng,
+      a.addr_lat,
+      a.addr_lon
+    );
+    const distB = calculateWalkingDistance(
+      COLUMBIA_COORDS.lat,
+      COLUMBIA_COORDS.lng,
+      b.addr_lat,
+      b.addr_lon
+    );
+
+    if (sortOption === "price-asc") return priceA - priceB;
+    if (sortOption === "price-desc") return priceB - priceA;
+    if (sortOption === "distance-asc") return distA - distB;
+    if (sortOption === "distance-desc") return distB - distA;
+    return 0;
+  });
+}
+
+// Fisher-Yates shuffle for the original listing order
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// --- Default Filters (with sortOption) ---
 export function getDefaultFilters(listings) {
   return {
     minPrice: null,
@@ -46,20 +91,23 @@ export function getDefaultFilters(listings) {
       "🚨 Too Cheap to Be True",
       "💸 Overpriced",
     ],
-    marketplaces: extractAllMarketplaces(listings), 
+    marketplaces: extractAllMarketplaces(listings),
     maxComplaints: 500,
     onlyNoFee: false,
     onlyFeatured: false,
     areas: [],
+    sortOption: "original", // New: preserves shuffled order unless changed!
   };
 }
 
+// --- Apply Filters to Listings ---
 function applyFilters(listings, filters) {
   if (!filters) return listings;
   return listings.filter((l) => {
     const price = l.price || l.net_effective_price || 0;
     const beds =
-      l.bedrooms ?? (l.rooms_description?.toLowerCase().includes("studio") ? 0.5 : null);
+      l.bedrooms ??
+      (l.rooms_description?.toLowerCase().includes("studio") ? 0.5 : null);
     const baths = l.bathrooms ?? 0;
     const complaints =
       Object.values(l.building_complaints || {}).reduce((a, b) => a + b, 0);
@@ -101,8 +149,6 @@ function applyFilters(listings, filters) {
     if (filters.onlyNoFee && !l.no_fee) return false;
     if (filters.onlyFeatured && !l.is_featured) return false;
 
-    // --- THIS IS THE KEY MODIFICATION ---
-    // Only show if the normalized area is in the filters
     if (
       filters.areas.length > 0 &&
       !filters.areas.includes(normalizeAreaName(l.orig_area_name || l.area_name))
@@ -113,26 +159,38 @@ function applyFilters(listings, filters) {
   });
 }
 
+// --- Main Hook ---
 export function useFilteredListings(filters) {
   const [allListings, setAllListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
 
+  // Shuffle once on mount for "original" order
   useEffect(() => {
     const enhanced = enrichedListings.map((l, idx) => ({
       ...l,
-      id: String(idx),
+      id: l.id || l.listing_id || l.source_url || l.source_id || String(idx),
       rating: Math.floor(Math.random() * 6),
     }));
-    setAllListings(enhanced);
-    setFilteredListings(enhanced);
+    setAllListings(shuffleArray(enhanced)); // <--- SHUFFLE!
+    setFilteredListings(shuffleArray(enhanced)); // for first render
   }, []);
 
+  // Apply filters + sort
   useEffect(() => {
-    setFilteredListings(applyFilters(allListings, filters));
+    let filtered = applyFilters(allListings, filters);
+    // Only sort if user picks a sort option (or preserve original)
+    if (filters && filters.sortOption) {
+      filtered = sortListings(filtered, filters.sortOption);
+    }
+    setFilteredListings(filtered);
   }, [allListings, filters]);
 
+  // Unique areas & marketplaces (used in UI)
   const allAreas = useMemo(() => extractAllAreas(allListings), [allListings]);
-  const allMarketplaces = useMemo(() => extractAllMarketplaces(allListings), [allListings]);
+  const allMarketplaces = useMemo(
+    () => extractAllMarketplaces(allListings),
+    [allListings]
+  );
 
   return [filteredListings, allAreas, allMarketplaces];
 }

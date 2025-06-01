@@ -22,7 +22,7 @@ const lionScoreColors = {
 
 export default function ListingDetailPage() {
   const { id } = useParams();
-  const listing = listings[parseInt(id)];
+  const listing = listings.find((l) => String(l.id) === String(id));
   const [imageIndex, setImageIndex] = useState(0);
 
   if (!listing)
@@ -37,9 +37,7 @@ export default function ListingDetailPage() {
 
   const price = listing.net_effective_price || listing.price;
   const pricePerBed =
-    listing.bedrooms && listing.bedrooms > 0
-      ? price / listing.bedrooms
-      : null;
+    listing.bedrooms && listing.bedrooms > 0 ? price / listing.bedrooms : null;
 
   const fullAddress = `${listing.addr_street || ""} ${
     listing.addr_unit || ""
@@ -62,11 +60,15 @@ export default function ListingDetailPage() {
       <div className="flex flex-col md:flex-row md:items-start gap-8">
         <div className="md:w-1/2 space-y-6">
           <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
-          
+
           <div className="text-xl font-semibold text-gray-700">
             Price:{" "}
             <span className="text-2xl font-bold text-[#34495e]">
-              ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              $
+              {Number(price).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
           </div>
 
@@ -74,12 +76,20 @@ export default function ListingDetailPage() {
             <span className="text-gray-700">Price per Bed:</span>{" "}
             {listing.bedrooms === 0 ? (
               <span className="text-green-700 font-bold">
-                ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                $
+                {Number(price).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
                 <span className="text-xs text-gray-500">(Studio)</span>
               </span>
             ) : listing.bedrooms && listing.bedrooms > 0 ? (
               <span className="text-green-700 font-bold">
-                ${Number(pricePerBed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {Number(pricePerBed).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
             ) : (
               <span className="text-gray-400 italic">Not available</span>
@@ -101,9 +111,7 @@ export default function ListingDetailPage() {
             </span>
             <span className="flex items-center gap-2">
               <img src={size} alt="Size" className="w-5 h-5" />{" "}
-              {listing.size_sqft
-                ? Number(listing.size_sqft).toFixed(2)
-                : "—"}{" "}
+              {listing.size_sqft ? Number(listing.size_sqft).toFixed(2) : "—"}{" "}
               ft²
             </span>
             <span className="flex items-center gap-2">
@@ -127,14 +135,14 @@ export default function ListingDetailPage() {
             </div>
           )}
 
-          <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-lg bg-gray-100">
+          <div className="relative w-full h-100 rounded-lg overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
             {Array.isArray(listing.photos_url) &&
             listing.photos_url.length > 0 ? (
               <>
                 <img
                   src={listing.photos_url[imageIndex]}
                   alt={`Image ${imageIndex + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300"
+                  className="h-full max-w-full object-contain transition-transform duration-300"
                 />
                 {listing.photos_url.length > 1 && (
                   <>
@@ -188,7 +196,7 @@ export default function ListingDetailPage() {
                   "https://via.placeholder.com/800x400?text=No+Image"
                 }
                 alt="No photos"
-                className="w-full h-full object-cover"
+                className="h-full max-w-full object-contain"
               />
             )}
           </div>

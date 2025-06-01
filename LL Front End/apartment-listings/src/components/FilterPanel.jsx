@@ -96,6 +96,113 @@ export default function FilterPanel({
             className="flex flex-wrap items-center gap-6 text-sm text-[#34495e] font-semibold relative"
             ref={filtersDropdownRef}
           >
+            {/* SORT */}
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "sort" ? null : "sort")
+                }
+                className="flex items-center gap-1 hover:underline hover:cursor-pointer"
+              >
+                SORT
+                <img src={dropdown} alt="dropdown" className="w-3 h-3" />
+              </button>
+              {openDropdown === "sort" && (
+                <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-72">
+                  <div className="flex flex-col gap-2 text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortOption"
+                        value="original"
+                        checked={filters.sortOption === "original"}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            sortOption: "original",
+                          }))
+                        }
+                        className="accent-[#34495e]"
+                      />
+                      Default
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortOption"
+                        value="price-asc"
+                        checked={filters.sortOption === "price-asc"}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            sortOption: "price-asc",
+                          }))
+                        }
+                        className="accent-[#34495e]"
+                      />
+                      Price: Low to High
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortOption"
+                        value="price-desc"
+                        checked={filters.sortOption === "price-desc"}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            sortOption: "price-desc",
+                          }))
+                        }
+                        className="accent-[#34495e]"
+                      />
+                      Price: High to Low
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortOption"
+                        value="distance-asc"
+                        checked={filters.sortOption === "distance-asc"}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            sortOption: "distance-asc",
+                          }))
+                        }
+                        className="accent-[#34495e]"
+                      />
+                      Proximity: Closest First
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortOption"
+                        value="distance-desc"
+                        checked={filters.sortOption === "distance-desc"}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            sortOption: "distance-desc",
+                          }))
+                        }
+                        className="accent-[#34495e]"
+                      />
+                      Proximity: Furthest First
+                    </label>
+                  </div>
+                  <div className="flex justify-end mt-3">
+                    <button
+                      className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      DONE
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* PRICE */}
             <div className="relative">
               <button
@@ -150,14 +257,15 @@ export default function FilterPanel({
               >
                 VELO SCORE
                 <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-                <TooltipInfo
+                {/* <TooltipInfo
                   text={`VeloScore™ tells you if the apartment's price matches its value:\n
 - ✅ Reasonable: You are good to go!
 - 🔥 Steal Deal: Jump on this—it's a rare find!
 - 🚨 Too Cheap to Be True: Be careful, something's off.
 - 💸 Overpriced: You're paying too much for what you get.
       `}
-                />
+                /> */}
+                <TooltipInfo text={`VeloScore™ tells you if the apartment's price matches its value.`} />
               </button>
               {openDropdown === "lion" && (
                 <LionScoreFilter
@@ -195,7 +303,7 @@ export default function FilterPanel({
             </div>
 
             {/* MORE */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 onClick={() =>
                   setOpenDropdown(openDropdown === "more" ? null : "more")
@@ -213,7 +321,7 @@ export default function FilterPanel({
                   setOpenDropdown={setOpenDropdown}
                 />
               )}
-            </div>
+            </div> */}
           </div>
 
           {/* SAVE SEARCH BUTTON */}
