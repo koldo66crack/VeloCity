@@ -91,13 +91,13 @@ export default function SeniorInsightsTab() {
         {" "}
         What We Wish We Knew While Renting in NYC
       </h2>
-      <SeniorBlogCard />
+      {/* <SeniorBlogCard /> */}
 
       <p className="text-black text-lg mb-8">
         Real tips and blogs from students who’ve crushed the NYC rental
         hunt—coming soon!
       </p>
-      <div className="text-center">
+      {/* <div className="text-center">
         <a
           href="https://chat.whatsapp.com/yourlink"
           target="_blank"
@@ -106,7 +106,7 @@ export default function SeniorInsightsTab() {
         >
           Join the Senior Tips Chat &rarr;
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }
