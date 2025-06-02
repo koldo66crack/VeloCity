@@ -119,13 +119,13 @@ export default function LandingPage() {
 
           {/* --- Button Stack --- */}
           <div className="flex flex-row gap-6 mt-12 w-full items-center justify-center">
-            <button
+            {/* <button
               onClick={() => navigate("/guide")}
               className="mt-8 bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer"
               style={{ borderRadius: 0, letterSpacing: "0.05em" }}
             >
               Guide to Rent Like a Pro
-            </button>
+            </button> */}
             <button
               onClick={() => navigate("/home")}
               className="mt-8 bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer"
