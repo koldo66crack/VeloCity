@@ -24,6 +24,19 @@ function isListingInBounds(listing, bounds) {
   );
 }
 
+// --- UNIVERSAL QUERY PARAMS (HashRouter + BrowserRouter) ---
+function getQueryParams() {
+  let search = window.location.search;
+  if (!search || search === "?") {
+    const hash = window.location.hash || "";
+    const queryStart = hash.indexOf("?");
+    if (queryStart !== -1) {
+      search = hash.slice(queryStart);
+    }
+  }
+  return new URLSearchParams(search);
+}
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function MemberHome() {
@@ -52,21 +65,22 @@ export default function MemberHome() {
       allMarketplaces.length > 0 &&
       listings.length > 0
     ) {
-      const params = new URLSearchParams(window.location.search);
+      const params = getQueryParams();
       const onlyHiddenGems = params.get("onlyHiddenGems");
       let initFilters = getDefaultFilters(listings);
 
       if (onlyHiddenGems) {
-        // Remove StreetEasy and Zillow for hidden gems
         const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
-          (mp) => !["StreetEasy", "Zillow"].includes(mp)
+          (mp) =>
+            mp.toLowerCase() !== "streeteasy" &&
+            mp.toLowerCase() !== "zillow"
         );
         initFilters = { ...initFilters, marketplaces: HIDDEN_GEM_MARKETS };
       }
       setFilters(initFilters);
-      setOrigFilters(initFilters); // important!
+      setOrigFilters(initFilters);
     }
-  }, [filters, allMarketplaces, listings]);
+  }, [filters, allMarketplaces, listings, window.location.hash]);
 
   // 2. Load user/group data AFTER filters are set, and **only overwrite with preferences if not hidden gems**
   useEffect(() => {
@@ -78,7 +92,7 @@ export default function MemberHome() {
         const data = await prefRes.json();
         if (data) {
           // If current filters are "onlyHiddenGems", preserve marketplaces!
-          const params = new URLSearchParams(window.location.search);
+          const params = getQueryParams();
           const onlyHiddenGems = params.get("onlyHiddenGems");
           let loaded = {
             minPrice: data.minBudget ?? filters.minPrice,
@@ -202,8 +216,6 @@ export default function MemberHome() {
   const handleGroupSave = async (listingId) => {
     if (!uid || !group) return;
     const idStr = String(listingId);
-
-    // POST to the collection endpoint
     const res = await fetch(`${BASE_URL}/api/group/saved`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

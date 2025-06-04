@@ -11,7 +11,7 @@ import {
   getDefaultFilters,
 } from "../hooks/useFilteredListings";
 
-// Helper to check if a listing is inside map bounds
+// Helper: check if listing is in map bounds
 function isListingInBounds(listing, bounds) {
   if (!bounds || !listing.addr_lat || !listing.addr_lon) return true;
   const lat = Number(listing.addr_lat);
@@ -24,6 +24,20 @@ function isListingInBounds(listing, bounds) {
   );
 }
 
+// --- UNIVERSAL QUERY PARAMS (HashRouter + BrowserRouter) ---
+function getQueryParams() {
+  // Try normal search first
+  let search = window.location.search;
+  if (!search || search === "?") {
+    const hash = window.location.hash || "";
+    const queryStart = hash.indexOf("?");
+    if (queryStart !== -1) {
+      search = hash.slice(queryStart);
+    }
+  }
+  return new URLSearchParams(search);
+}
+
 export default function PublicHome() {
   const { openAuthModal } = useUI();
   const navigate = useNavigate();
@@ -31,10 +45,10 @@ export default function PublicHome() {
   const [filters, setFilters] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
 
-  // Fetch the listings and filter helpers
+  // Listings + helpers
   const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
 
-  // Set initial filters only on first eligible render
+  // Set initial filters based on query params
   useEffect(() => {
     if (
       !filters &&
@@ -42,30 +56,32 @@ export default function PublicHome() {
       allMarketplaces.length > 0 &&
       listings.length > 0
     ) {
-      // Use window.location.search for full compatibility
-      const params = new URLSearchParams(window.location.search);
+      const params = getQueryParams();
       const onlyHiddenGems = params.get("onlyHiddenGems");
       let initFilters = getDefaultFilters(listings);
 
       if (onlyHiddenGems) {
-        // Exclude StreetEasy and Zillow from the marketplaces filter
+        // Exclude StreetEasy and Zillow
         const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
-          (mp) => !["StreetEasy", "Zillow"].includes(mp)
+          (mp) =>
+            mp.toLowerCase() !== "streeteasy" &&
+            mp.toLowerCase() !== "zillow"
         );
         initFilters = { ...initFilters, marketplaces: HIDDEN_GEM_MARKETS };
       }
       setFilters(initFilters);
     }
-  }, [filters, allMarketplaces, listings]);
+    // Add hash to deps so this re-triggers when URL changes for SPA!
+  }, [filters, allMarketplaces, listings, window.location.hash]);
 
   const handleSave = () => openAuthModal();
 
-  // Show only listings currently visible on map (if user pans/zooms)
+  // Listings visible in current map bounds
   const visibleListings = mapBounds
     ? listings.filter((l) => isListingInBounds(l, mapBounds))
     : listings;
 
-  if (!filters) return null; // Don’t render until filters are ready
+  if (!filters) return null;
 
   return (
     <div className="pt-10">
@@ -95,7 +111,7 @@ export default function PublicHome() {
               activeListing={null}
               setActiveListing={() => {}}
               onListingClick={(l) => window.open(`/listing/${l.id}`, "_blank")}
-              onBoundsChange={setMapBounds} // Let map drive filtering
+              onBoundsChange={setMapBounds}
             />
           </div>
         </div>
