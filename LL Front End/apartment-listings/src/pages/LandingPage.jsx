@@ -129,7 +129,7 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => navigate("/home?onlyHiddenGems=1")}
-              className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 text-lg font-bold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto"
+              className="bg-[#5b2c6f] hover:bg-[#4a235a] text-white px-6 py-3 text-lg font-bold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto"
               style={{ borderRadius: 0, letterSpacing: "0.05em" }}
             >
               ONLY THE HIDDEN GEMS <span className="hidden sm:inline"></span><br />
