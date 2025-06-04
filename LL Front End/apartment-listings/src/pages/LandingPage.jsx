@@ -121,7 +121,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 mt-12 w-full items-center justify-center">
             <button
               onClick={() => navigate("/home")}
-              className="bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto border-l-4 border-white"
+              className="bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto"
               style={{ borderRadius: 0, letterSpacing: "0.05em" }}
             >
               SHOW ALL NYC LISTINGS <br />
@@ -129,7 +129,7 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => navigate("/home?onlyHiddenGems=1")}
-              className="bg-pink-500 hover:bg-pink-700 text-white px-6 py-3 text-lg font-bold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto border-l-4 border-yellow-300"
+              className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 text-lg font-bold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto"
               style={{ borderRadius: 0, letterSpacing: "0.05em" }}
             >
               ONLY THE HIDDEN GEMS <span className="hidden sm:inline"></span><br />
