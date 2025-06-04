@@ -6,8 +6,8 @@ export default function MarketplaceFilter({
   setTempMarketplaces,
   setFilters,
   setOpenDropdown,
+  mobile = false, // If inside modal, pass mobile={true}
 }) {
-
   const handleCheckboxChange = (mp, checked) => {
     const updated = checked
       ? [...tempMarketplaces, mp]
@@ -15,9 +15,8 @@ export default function MarketplaceFilter({
     setTempMarketplaces(updated);
   };
 
-  return (
-    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-80">
-      {/* <p className="font-semibold text-gray-800 mb-2">Marketplaces</p> */}
+  const content = (
+    <div className="w-80 max-w-full">
       <div className="grid grid-cols-2 gap-2 text-sm">
         {allMarketplaces.map((mp) => (
           <label key={mp} className="flex items-center gap-2">
@@ -38,19 +37,29 @@ export default function MarketplaceFilter({
         >
           RESET
         </button>
-        <button
-          className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
-          onClick={() => {
-            setFilters((prev) => ({
-              ...prev,
-              marketplaces: tempMarketplaces,
-            }));
-            setOpenDropdown(null);
-          }}
-        >
-          DONE
-        </button>
+        {setFilters && setOpenDropdown && (
+          <button
+            className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
+            onClick={() => {
+              setFilters((prev) => ({
+                ...prev,
+                marketplaces: tempMarketplaces,
+              }));
+              setOpenDropdown(null);
+            }}
+          >
+            DONE
+          </button>
+        )}
       </div>
+    </div>
+  );
+
+  return mobile ? (
+    <div>{content}</div>
+  ) : (
+    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-80">
+      {content}
     </div>
   );
 }

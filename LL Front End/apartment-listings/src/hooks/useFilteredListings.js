@@ -127,27 +127,41 @@ function applyFilters(listings, filters) {
       l.bedrooms ??
       (l.rooms_description?.toLowerCase().includes("studio") ? 0.5 : null);
     const baths = l.bathrooms ?? 0;
-    const complaints =
-      Object.values(l.building_complaints || {}).reduce((a, b) => a + b, 0);
+    const complaints = Object.values(l.building_complaints || {}).reduce(
+      (a, b) => a + b,
+      0
+    );
 
     if (filters.minPrice != null && price < filters.minPrice) return false;
     if (filters.maxPrice != null && price > filters.maxPrice) return false;
 
-    if (filters.bedrooms !== "any") {
-      const req =
-        filters.bedrooms === "4+"
-          ? beds >= 4
-          : filters.bedrooms === "Studio"
-          ? beds === 0.5
-          : beds === parseFloat(filters.bedrooms);
+    // --- BEDROOMS ---
+    if (
+      filters.bedrooms !== undefined &&
+      filters.bedrooms !== null &&
+      filters.bedrooms !== "" &&
+      filters.bedrooms !== "any"
+    ) {
+      let req = true;
+      if (filters.bedrooms === "4+") {
+        req = beds >= 4;
+      } else if (filters.bedrooms === "Studio") {
+        req = beds === 0.5 || beds === 0;
+      } else {
+        req = beds === parseFloat(filters.bedrooms);
+      }
       if (!req) return false;
     }
 
+    // --- BATHROOMS ---
     if (
-      filters.bathrooms !== "any" &&
-      baths < parseFloat(filters.bathrooms)
-    )
-      return false;
+      filters.bathrooms !== undefined &&
+      filters.bathrooms !== null &&
+      filters.bathrooms !== "" &&
+      filters.bathrooms !== "any"
+    ) {
+      if (baths < parseFloat(filters.bathrooms)) return false;
+    }
 
     if (
       filters.lionScores.length > 0 &&
@@ -172,7 +186,9 @@ function applyFilters(listings, filters) {
 
     if (
       filters.areas.length > 0 &&
-      !filters.areas.includes(normalizeAreaName(l.orig_area_name || l.area_name))
+      !filters.areas.includes(
+        normalizeAreaName(l.orig_area_name || l.area_name)
+      )
     )
       return false;
 

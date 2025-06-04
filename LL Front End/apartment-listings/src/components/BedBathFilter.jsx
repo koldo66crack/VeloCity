@@ -11,9 +11,10 @@ export default function BedBathFilter({
   setTempBath,
   setFilters,
   setOpenDropdown,
+  mobile = false, // Add this prop; parent passes mobile={true} inside modal
 }) {
-  return (
-    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-[28rem]">
+  const content = (
+    <div className="w-[28rem] max-w-full">
       <p className="font-semibold text-gray-800 mb-1">BEDROOMS</p>
       <p className="text-xs text-gray-500 mb-2">Choose a filter</p>
       <div className="grid grid-cols-6 gap-2 mb-4">
@@ -51,32 +52,47 @@ export default function BedBathFilter({
           onClick={() => {
             setTempBed("any");
             setTempBath("any");
-            setFilters((prev) => ({
-              ...prev,
-              bedrooms: "any",
-              bathrooms: "any",
-            }));
-            setOpenDropdown(null);
+            if (setFilters && setOpenDropdown) {
+              setFilters((prev) => ({
+                ...prev,
+                bedrooms: "any",
+                bathrooms: "any",
+              }));
+              setOpenDropdown(null);
+            }
+            // On mobile, only update local state
           }}
         >
           RESET
         </button>
-        <button
-          className="bg-[#34495e] text-white px-4 py-1 hover:cursor-pointer"
-          onClick={() => {
-            const parsedBed = tempBed === "Studio" ? 0 : tempBed;
-            const parsedBath = tempBath.replace("+", "");
-            setFilters((prev) => ({
-              ...prev,
-              bedrooms: parsedBed === "Any" ? "any" : parsedBed,
-              bathrooms: parsedBath === "Any" ? "any" : parsedBath,
-            }));
-            setOpenDropdown(null);
-          }}
-        >
-          DONE
-        </button>
+        {/* Only render DONE if setFilters && setOpenDropdown exist (desktop). On mobile, handled by modal parent */}
+        {setFilters && setOpenDropdown && (
+          <button
+            className="bg-[#34495e] text-white px-4 py-1 hover:cursor-pointer"
+            onClick={() => {
+              const parsedBed = tempBed === "Studio" ? 0 : tempBed;
+              const parsedBath = tempBath.replace("+", "");
+              setFilters((prev) => ({
+                ...prev,
+                bedrooms: parsedBed === "Any" ? "any" : parsedBed,
+                bathrooms: parsedBath === "Any" ? "any" : parsedBath,
+              }));
+              setOpenDropdown(null);
+            }}
+          >
+            DONE
+          </button>
+        )}
       </div>
+    </div>
+  );
+
+  // Only desktop uses the dropdown wrapper; mobile renders a plain block.
+  return mobile ? (
+    <div>{content}</div>
+  ) : (
+    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-[28rem]">
+      {content}
     </div>
   );
 }

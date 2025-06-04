@@ -55,6 +55,9 @@ export default function MemberHome() {
 
   const [mapBounds, setMapBounds] = useState(null);
 
+  // *** NEW: Mobile view toggle ***
+  const [mobileView, setMobileView] = useState("list"); // "list" or "map"
+
   const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
 
   // 1. Initialize filters (including ONLY HIDDEN GEMS) **once** on mount
@@ -254,12 +257,42 @@ export default function MemberHome() {
         allAreas={allAreas}
         allMarketplaces={allMarketplaces}
       />
+
+      {/* Mobile: Toggle buttons */}
+      <div className="md:hidden flex justify-between mb-2">
+        <button
+          className={`flex-1 py-2 font-semibold border-b-2 ${
+            mobileView === "list"
+              ? "border-[#34495e] text-[#34495e]"
+              : "border-transparent text-gray-400"
+          }`}
+          onClick={() => setMobileView("list")}
+        >
+          Listings
+        </button>
+        <button
+          className={`flex-1 py-2 font-semibold border-b-2 ${
+            mobileView === "map"
+              ? "border-[#34495e] text-[#34495e]"
+              : "border-transparent text-gray-400"
+          }`}
+          onClick={() => setMobileView("map")}
+        >
+          Map
+        </button>
+      </div>
+
       <div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]"
         style={{ height: "calc(100vh - 128px)" }}
       >
-        <div className="flex lg:flex-row gap-6 h-full">
-          <div className="lg:w-1/2 h-full overflow-y-auto pr-2">
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
+          {/* Listings: only show on desktop or if mobileView==="list" */}
+          <div
+            className={`lg:w-1/2 h-full overflow-y-auto pr-2 ${
+              mobileView === "map" ? "hidden md:block" : ""
+            }`}
+          >
             <ListingGrid
               listings={visibleListings}
               savedIds={combinedSavedIds}
@@ -270,7 +303,12 @@ export default function MemberHome() {
               onView={handleView}
             />
           </div>
-          <div className="lg:w-1/2 h-full min-h-[400px]">
+          {/* Map: only show on desktop or if mobileView==="map" */}
+          <div
+            className={`lg:w-1/2 h-full min-h-[400px] ${
+              mobileView === "list" ? "hidden md:block" : ""
+            }`}
+          >
             <MapView
               listings={listings}
               activeListing={null}

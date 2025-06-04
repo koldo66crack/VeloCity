@@ -5,6 +5,7 @@ export default function LionScoreFilter({
   setTempLionScores,
   setFilters,
   setOpenDropdown,
+  mobile = false, // default: desktop, mobile=true inside modal
 }) {
   const lionScoreOptions = [
     "✅ Reasonable",
@@ -20,9 +21,8 @@ export default function LionScoreFilter({
     setTempLionScores(updated);
   };
 
-  return (
-    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-80">
-      {/* <p className="font-semibold text-gray-800 mb-2">LION SCORE</p> */}
+  const content = (
+    <div className="w-80 max-w-full">
       <div className="grid grid-cols-2 gap-2 text-sm">
         {lionScoreOptions.map((score) => (
           <label key={score} className="flex items-center gap-2">
@@ -30,9 +30,7 @@ export default function LionScoreFilter({
               type="checkbox"
               className="accent-[#34495e]"
               checked={tempLionScores.includes(score)}
-              onChange={(e) =>
-                handleCheckboxChange(score, e.target.checked)
-              }
+              onChange={(e) => handleCheckboxChange(score, e.target.checked)}
             />
             <span>{score}</span>
           </label>
@@ -41,25 +39,33 @@ export default function LionScoreFilter({
       <div className="flex justify-between text-sm mt-3">
         <button
           className="text-gray-400 hover:underline cursor-pointer"
-          onClick={() =>
-            setTempLionScores([...lionScoreOptions])
-          }
+          onClick={() => setTempLionScores([...lionScoreOptions])}
         >
           RESET
         </button>
-        <button
-          className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
-          onClick={() => {
-            setFilters((prev) => ({
-              ...prev,
-              lionScores: tempLionScores,
-            }));
-            setOpenDropdown(null);
-          }}
-        >
-          DONE
-        </button>
+        {setFilters && setOpenDropdown && (
+          <button
+            className="bg-[#34495e] text-white px-4 py-1 cursor-pointer"
+            onClick={() => {
+              setFilters((prev) => ({
+                ...prev,
+                lionScores: tempLionScores,
+              }));
+              setOpenDropdown(null);
+            }}
+          >
+            DONE
+          </button>
+        )}
       </div>
+    </div>
+  );
+
+  return mobile ? (
+    <div>{content}</div>
+  ) : (
+    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-80">
+      {content}
     </div>
   );
 }

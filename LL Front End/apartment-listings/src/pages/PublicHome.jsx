@@ -45,6 +45,9 @@ export default function PublicHome() {
   const [filters, setFilters] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
 
+  // New: toggle for mobile view
+  const [mobileView, setMobileView] = useState("list"); // "list" or "map"
+
   // Listings + helpers
   const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
 
@@ -97,15 +100,49 @@ export default function PublicHome() {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]"
         style={{ height: "calc(100vh - 128px)" }}
       >
+        {/* Mobile: Toggle buttons */}
+        <div className="md:hidden flex justify-between mb-2">
+          <button
+            className={`flex-1 py-2 font-semibold border-b-2 ${
+              mobileView === "list"
+                ? "border-[#34495e] text-[#34495e]"
+                : "border-transparent text-gray-400"
+            }`}
+            onClick={() => setMobileView("list")}
+          >
+            Listings
+          </button>
+          <button
+            className={`flex-1 py-2 font-semibold border-b-2 ${
+              mobileView === "map"
+                ? "border-[#34495e] text-[#34495e]"
+                : "border-transparent text-gray-400"
+            }`}
+            onClick={() => setMobileView("map")}
+          >
+            Map
+          </button>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6 h-full">
-          <div className="lg:w-1/2 h-full overflow-y-auto pr-2">
+          {/* Listings: only show on desktop or if mobileView==="list" */}
+          <div
+            className={`lg:w-1/2 h-full overflow-y-auto pr-2 ${
+              mobileView === "map" ? "hidden md:block" : ""
+            }`}
+          >
             <ListingGrid
               listings={visibleListings}
               savedIds={[]}
               onSave={handleSave}
             />
           </div>
-          <div className="lg:w-1/2 h-full min-h-[400px]">
+          {/* Map: only show on desktop or if mobileView==="map" */}
+          <div
+            className={`lg:w-1/2 h-full min-h-[400px] ${
+              mobileView === "list" ? "hidden md:block" : ""
+            }`}
+          >
             <MapView
               listings={listings}
               activeListing={null}
