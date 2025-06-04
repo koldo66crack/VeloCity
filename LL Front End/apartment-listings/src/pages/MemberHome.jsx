@@ -1,3 +1,5 @@
+// src/pages/MemberHome.jsx
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useUI } from "../store/useUI";
@@ -22,7 +24,6 @@ function isListingInBounds(listing, bounds) {
   );
 }
 
-// Ensure this env var is defined in your deploy settings
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function MemberHome() {
@@ -39,20 +40,35 @@ export default function MemberHome() {
   const [group, setGroup] = useState(null);
   const [groupSavedIds, setGroupSavedIds] = useState([]);
 
-  const [mapBounds, setMapBounds] = useState(null); // <- NEW: Store map bounds
+  const [mapBounds, setMapBounds] = useState(null);
 
   const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
 
-  // ---- Dynamically initialize filters with live marketplace data ----
+  // 1. Initialize filters (including ONLY HIDDEN GEMS) **once** on mount
   useEffect(() => {
-    if (!filters && allMarketplaces && allMarketplaces.length > 0 && listings.length > 0) {
-      const defaultFilters = getDefaultFilters(listings);
-      setFilters(defaultFilters);
-      setOrigFilters(defaultFilters);
+    if (
+      !filters &&
+      allMarketplaces &&
+      allMarketplaces.length > 0 &&
+      listings.length > 0
+    ) {
+      const params = new URLSearchParams(window.location.search);
+      const onlyHiddenGems = params.get("onlyHiddenGems");
+      let initFilters = getDefaultFilters(listings);
+
+      if (onlyHiddenGems) {
+        // Remove StreetEasy and Zillow for hidden gems
+        const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
+          (mp) => !["StreetEasy", "Zillow"].includes(mp)
+        );
+        initFilters = { ...initFilters, marketplaces: HIDDEN_GEM_MARKETS };
+      }
+      setFilters(initFilters);
+      setOrigFilters(initFilters); // important!
     }
   }, [filters, allMarketplaces, listings]);
 
-  // ---- Load user preferences, personal/group saved, viewed ----
+  // 2. Load user/group data AFTER filters are set, and **only overwrite with preferences if not hidden gems**
   useEffect(() => {
     if (!uid || !filters) return;
     (async () => {
@@ -61,23 +77,28 @@ export default function MemberHome() {
       if (prefRes.ok) {
         const data = await prefRes.json();
         if (data) {
-          const loaded = {
+          // If current filters are "onlyHiddenGems", preserve marketplaces!
+          const params = new URLSearchParams(window.location.search);
+          const onlyHiddenGems = params.get("onlyHiddenGems");
+          let loaded = {
             minPrice: data.minBudget ?? filters.minPrice,
             maxPrice: data.maxBudget ?? filters.maxPrice,
             bedrooms:
-              data.bedrooms != null
-                ? String(data.bedrooms)
-                : filters.bedrooms,
+              data.bedrooms != null ? String(data.bedrooms) : filters.bedrooms,
             bathrooms:
               data.bathrooms != null
                 ? String(data.bathrooms)
                 : filters.bathrooms,
             lionScores: data.lionScores ?? filters.lionScores,
-            marketplaces: data.marketplaces ?? filters.marketplaces,
+            marketplaces:
+              onlyHiddenGems && filters.marketplaces.length
+                ? filters.marketplaces // preserve hidden gems selection!
+                : data.marketplaces ?? filters.marketplaces,
             maxComplaints: data.maxComplaints ?? filters.maxComplaints,
             onlyNoFee: data.onlyNoFee ?? filters.onlyNoFee,
             onlyFeatured: data.onlyFeatured ?? filters.onlyFeatured,
             areas: data.areas ?? filters.areas,
+            sortOption: data.sortOption ?? filters.sortOption,
           };
           setFilters(loaded);
           setOrigFilters(loaded);
@@ -115,7 +136,7 @@ export default function MemberHome() {
     })();
   }, [uid, filters]);
 
-  // ---- Save preferences on change ----
+  // Save preferences if changed
   useEffect(() => {
     if (!prefLoaded || !filters || !origFilters) return;
     if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
@@ -124,10 +145,8 @@ export default function MemberHome() {
           userId: uid,
           minBudget: filters.minPrice,
           maxBudget: filters.maxPrice,
-          bedrooms:
-            filters.bedrooms === "any" ? null : Number(filters.bedrooms),
-          bathrooms:
-            filters.bathrooms === "any" ? null : Number(filters.bathrooms),
+          bedrooms: filters.bedrooms === "any" ? null : Number(filters.bedrooms),
+          bathrooms: filters.bathrooms === "any" ? null : Number(filters.bathrooms),
           lionScores: filters.lionScores,
           marketplaces: filters.marketplaces,
           areas: filters.areas,
@@ -190,7 +209,7 @@ export default function MemberHome() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: uid,
-        groupId: group.id, // ← use `group`, not `grp`
+        groupId: group.id,
         listingId: idStr,
       }),
     });
@@ -207,7 +226,7 @@ export default function MemberHome() {
     ? Array.from(new Set([...savedIds, ...groupSavedIds]))
     : savedIds;
 
-  // ---- New: Filter by map bounds ----
+  // Filter by map bounds
   const visibleListings = mapBounds
     ? listings.filter((l) => isListingInBounds(l, mapBounds))
     : listings;
@@ -248,7 +267,7 @@ export default function MemberHome() {
                 handleView(l.id);
                 window.open(`/listing/${l.id}`);
               }}
-              onBoundsChange={setMapBounds} // <--- THE MAGIC LINE!
+              onBoundsChange={setMapBounds}
             />
           </div>
         </div>

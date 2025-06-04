@@ -40,7 +40,7 @@ export default function Navbar() {
         </div>
 
         {/* Search Bar */}
-        <div className="hidden sm:flex flex-grow justify-center">
+        {/* <div className="hidden sm:flex flex-grow justify-center">
           <div className="relative w-full max-w-md">
             <input
               type="text"
@@ -53,7 +53,7 @@ export default function Navbar() {
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Right Menu */}
         <div className="flex items-center gap-6">

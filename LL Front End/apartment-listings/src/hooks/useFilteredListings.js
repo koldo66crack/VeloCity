@@ -14,14 +14,25 @@ function normalizeAreaName(area) {
     .trim();
 }
 
-// Extract unique marketplaces from listings
+// Normalizes marketplaces for consistent matching (e.g., "streeteasy" → "StreetEasy")
+function normalizeMarketplace(mp) {
+  if (!mp) return "";
+  // Capitalize each word, remove extra spaces
+  return mp
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Extract unique marketplaces from listings, normalized and sorted
 function extractAllMarketplaces(listings) {
   const set = new Set();
   listings.forEach((l) => {
     if (Array.isArray(l.marketplace)) {
-      l.marketplace.forEach((mp) => set.add(mp));
+      l.marketplace.forEach((mp) => set.add(normalizeMarketplace(mp)));
     } else if (typeof l.marketplace === "string") {
-      set.add(l.marketplace);
+      set.add(normalizeMarketplace(l.marketplace));
     }
   });
   return Array.from(set).sort();
@@ -96,13 +107,20 @@ export function getDefaultFilters(listings) {
     onlyNoFee: false,
     onlyFeatured: false,
     areas: [],
-    sortOption: "original", // New: preserves shuffled order unless changed!
+    sortOption: "original", // Preserves shuffled order unless changed
   };
 }
 
 // --- Apply Filters to Listings ---
 function applyFilters(listings, filters) {
   if (!filters) return listings;
+
+  // Normalize selected marketplaces filter just once for efficiency
+  const normalizedMarketplaces =
+    filters.marketplaces && filters.marketplaces.length
+      ? filters.marketplaces.map(normalizeMarketplace)
+      : [];
+
   return listings.filter((l) => {
     const price = l.price || l.net_effective_price || 0;
     const beds =
@@ -137,11 +155,14 @@ function applyFilters(listings, filters) {
     )
       return false;
 
+    // ---- MARKETPLACE FILTER, NORMALIZED MATCHING ----
     if (
-      filters.marketplaces.length > 0 &&
+      normalizedMarketplaces.length > 0 &&
       !(
-        Array.isArray(l.marketplace) ? l.marketplace : [l.marketplace]
-      ).some((m) => filters.marketplaces.includes(m))
+        Array.isArray(l.marketplace)
+          ? l.marketplace.map(normalizeMarketplace)
+          : [normalizeMarketplace(l.marketplace)]
+      ).some((m) => normalizedMarketplaces.includes(m))
     )
       return false;
 
@@ -171,8 +192,9 @@ export function useFilteredListings(filters) {
       id: l.id || l.listing_id || l.source_url || l.source_id || String(idx),
       rating: Math.floor(Math.random() * 6),
     }));
-    setAllListings(shuffleArray(enhanced)); // <--- SHUFFLE!
-    setFilteredListings(shuffleArray(enhanced)); // for first render
+    const shuffled = shuffleArray(enhanced);
+    setAllListings(shuffled); // SHUFFLE!
+    setFilteredListings(shuffled); // for first render
   }, []);
 
   // Apply filters + sort

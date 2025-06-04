@@ -66,9 +66,9 @@ export default function FilterPanel({
   }, []);
 
   return (
-    <header className="bg-gray-100 border-b sticky top-[64px] z-50">
+    <header className="bg-gray-100 border-b sticky top-[64px] z-10">
       <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-left gap-4">
           {/* LOCATION */}
           <div className="relative" ref={locationDropdownRef}>
             <button
@@ -325,10 +325,10 @@ export default function FilterPanel({
           </div>
 
           {/* SAVE SEARCH BUTTON */}
-          <button className="border border-gray-300 px-4 py-2 font-semibold hover:bg-gray-300 hover:cursor-pointer text-sm flex items-center gap-2">
+          {/* <button className="border border-gray-300 px-4 py-2 font-semibold hover:bg-gray-300 hover:cursor-pointer text-sm flex items-center gap-2">
             <img src={save} alt="save search" className="w-4 h-4" />
             SAVE PREFERENCES
-          </button>
+          </button> */}
         </div>
       </div>
     </header>

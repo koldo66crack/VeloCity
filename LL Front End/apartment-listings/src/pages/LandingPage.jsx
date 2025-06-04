@@ -118,20 +118,22 @@ export default function LandingPage() {
           {/* <CountdownTimer label="NYC peak rental season starts in:" /> */}
 
           {/* --- Button Stack --- */}
-          <div className="flex flex-row gap-6 mt-12 w-full items-center justify-center">
-            {/* <button
-              onClick={() => navigate("/guide")}
-              className="mt-8 bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer"
-              style={{ borderRadius: 0, letterSpacing: "0.05em" }}
-            >
-              Guide to Rent Like a Pro
-            </button> */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-12 w-full items-center justify-center">
             <button
               onClick={() => navigate("/home")}
-              className="mt-8 bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer"
+              className="bg-[#34495e] hover:bg-gray-800 text-white px-6 py-3 text-lg font-semibold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto border-l-4 border-white"
               style={{ borderRadius: 0, letterSpacing: "0.05em" }}
             >
-              Start Apartment Search
+              SHOW ALL NYC LISTINGS <br />
+              <span className="text-sm">This includes listings from all the sources.</span>
+            </button>
+            <button
+              onClick={() => navigate("/home?onlyHiddenGems=1")}
+              className="bg-pink-500 hover:bg-pink-700 text-white px-6 py-3 text-lg font-bold transition duration-300 shadow-lg cursor-pointer w-full sm:w-auto border-l-4 border-yellow-300"
+              style={{ borderRadius: 0, letterSpacing: "0.05em" }}
+            >
+              ONLY THE HIDDEN GEMS <span className="hidden sm:inline"></span><br />
+              <span className="text-sm">These listings are NOT on StreetEasy or Zillow.</span>
             </button>
           </div>
         </div>
