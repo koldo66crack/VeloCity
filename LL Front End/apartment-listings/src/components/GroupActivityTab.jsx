@@ -207,7 +207,7 @@ export default function GroupActivityTab() {
     .filter(Boolean);
 
   return (
-    <div className="p-4">
+    <div className="p-4 text-gray-200">
       <h2 className="text-2xl font-bold mb-4">Group Activity</h2>
 
       {/* TABS */}

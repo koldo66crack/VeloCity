@@ -57,7 +57,7 @@ export default function Navbar() {
           </div>
 
           {/* Center: Search Bar */}
-          <div className="flex-grow flex justify-center max-w-md mx-8">
+          {/* <div className="flex-grow flex justify-center max-w-md mx-8">
             <div className="relative w-full">
               <input
                 type="text"
@@ -70,7 +70,7 @@ export default function Navbar() {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Right: Menu */}
           <div className="flex items-center gap-6">
@@ -163,7 +163,7 @@ export default function Navbar() {
             <div className="fixed top-16 right-3 w-60 bg-gray-900/95 backdrop-blur-sm shadow-2xl border border-green-500/30 animate-fadein z-50 rounded-lg">
               <div className="flex flex-col p-3">
                 {/* Search Bar for Mobile */}
-                <div className="relative mb-4">
+                {/* <div className="relative mb-4">
                   <input
                     type="text"
                     placeholder="Search address..."
@@ -174,7 +174,7 @@ export default function Navbar() {
                     alt="Search"
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                   />
-                </div>
+                </div> */}
 
                 {!user ? (
                   <button

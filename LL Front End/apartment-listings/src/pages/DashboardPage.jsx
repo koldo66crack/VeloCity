@@ -75,57 +75,74 @@ export default function DashboardPage() {
 
   const visibleListings = savedIds.map(findListingById).filter(Boolean);
 
-  if (!ready) return <p className="p-6">Loading your dashboard…</p>;
+  if (!ready) return (
+    <div className="pt-10 bg-gray-900 min-h-screen flex items-center justify-center">
+      <div className="text-gray-300 text-lg">Loading your dashboard...</div>
+    </div>
+  );
 
   return (
-    <div className="p-6 pt-20">
-      <h1 className="text-3xl font-bold mb-4">My Dashboard</h1>
+    <div className="pt-10 bg-gray-900 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]">
+        <h1 className="text-3xl font-bold mb-6 text-gray-200">My Dashboard</h1>
 
-      {/* components */}
-      <div className="mb-6 flex gap-4">
-        <button
-          onClick={() => setTab("saved")}
-          className={`px-4 py-2 cursor-pointer ${
-            tab === "saved"
-              ? "bg-[#34495e] text-white"
-              : "bg-gray-100 text-gray-700"
-          }`}
-        >
-          Saved Listings ({savedIds.length})
-        </button>
-        {/* <button
-          onClick={() => setTab("prefs")}
-          className={`px-4 py-2 cursor-pointer ${
-            tab === "prefs"
-              ? "bg-[#34495e] text-white"
-              : "bg-gray-100 text-gray-700"
-          }`}
-        >
-          Preferences
-        </button> */}
-        <button
-          onClick={() => setTab("group")}
-          className={`px-4 py-2 cursor-pointer ${
-            tab === "group"
-              ? "bg-[#34495e] text-white"
-              : "bg-gray-100 text-gray-700"
-          }`}
-        >
-          Group Activity
-        </button>
+        {/* Tab Navigation */}
+        <div className="mb-8 flex gap-1 border-b border-gray-700">
+          <button
+            onClick={() => setTab("saved")}
+            className={`px-6 py-3 font-semibold transition-all duration-200 relative ${
+              tab === "saved"
+                ? "text-green-400 border-b-2 border-green-400"
+                : "text-gray-400 hover:text-gray-200 hover:border-b-2 hover:border-gray-600"
+            }`}
+          >
+            Saved Listings ({savedIds.length})
+            {tab === "saved" && (
+              <div className="absolute inset-0 bg-green-400/10 rounded-t-lg transition-all duration-200"></div>
+            )}
+          </button>
+          {/* <button
+            onClick={() => setTab("prefs")}
+            className={`px-6 py-3 font-semibold transition-all duration-200 relative ${
+              tab === "prefs"
+                ? "text-green-400 border-b-2 border-green-400"
+                : "text-gray-400 hover:text-gray-200 hover:border-b-2 hover:border-gray-600"
+            }`}
+          >
+            Preferences
+            {tab === "prefs" && (
+              <div className="absolute inset-0 bg-green-400/10 rounded-t-lg transition-all duration-200"></div>
+            )}
+          </button> */}
+          <button
+            onClick={() => setTab("group")}
+            className={`px-6 py-3 font-semibold transition-all duration-200 relative ${
+              tab === "group"
+                ? "text-green-400 border-b-2 border-green-400"
+                : "text-gray-400 hover:text-gray-200 hover:border-b-2 hover:border-gray-600"
+            }`}
+          >
+            Group Activity
+            {tab === "group" && (
+              <div className="absolute inset-0 bg-green-400/10 rounded-t-lg transition-all duration-200"></div>
+            )}
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+          {tab === "saved" && (
+            <SavedListingsTab
+              savedIds={savedIds}
+              onSave={handleSave}
+              onUnsave={handleUnsave}
+              listings={visibleListings}
+            />
+          )}
+          {/* {tab === "prefs" && <PreferencesTab prefs={prefs} userId={userId} />} */}
+          {tab === "group" && <GroupActivityTab />}
+        </div>
       </div>
-
-      {/* Content */}
-      {tab === "saved" && (
-        <SavedListingsTab
-          savedIds={savedIds}
-          onSave={handleSave}
-          onUnsave={handleUnsave}
-          listings={visibleListings}
-        />
-      )}
-      {/* {tab === "prefs" && <PreferencesTab prefs={prefs} userId={userId} />} */}
-      {tab === "group" && <GroupActivityTab />}
     </div>
   );
 }
