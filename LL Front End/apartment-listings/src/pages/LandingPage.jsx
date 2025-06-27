@@ -241,7 +241,7 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-center md:text-left">
             <h2 className="text-4xl md:text-5xl font-semibold text-green-400">
-              The Solution is Velocity.
+              The Solution is VeloCity.
             </h2>
             <p className="mt-4 text-xl text-gray-400">
               We aggregate verified listings directly from hundreds of real estate company websites, funneling them all into one place for you.
@@ -254,7 +254,7 @@ export default function LandingPage() {
       {/* --- Section 6: Why Use Velocity --- */}
       <ScrollSection>
         <h2 className="text-3xl md:text-4xl font-semibold text-gray-200 text-center mb-16">
-          The Velocity Advantage
+          The VeloCity Advantage
         </h2>
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <CustomCard>
@@ -288,7 +288,7 @@ export default function LandingPage() {
             Stop Competing. Start Winning.
           </h2>
           <p className="mt-4 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-            Your dream apartment is out there. You just need to know where to look. Get started with Velocity today.
+            Your dream apartment is out there. You just need to know where to look. Get started with VeloCity today.
           </p>
           <div className="mt-8">
             <CustomButton onClick={() => navigate("/home")}>
