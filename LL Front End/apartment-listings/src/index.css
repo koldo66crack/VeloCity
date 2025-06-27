@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+/* Plus Jakarta Sans Font Configuration */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Global Font Configuration */
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all elements inherit the font family */
+* {
+  font-family: inherit;
+}
+
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -68,3 +93,26 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+/* Custom dark scrollbar for the whole site */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #23272f;
+}
+::-webkit-scrollbar-thumb {
+  background: #444950;
+  border-radius: 8px;
+  border: 2px solid #23272f;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5a5f67;
+}
+::-webkit-scrollbar-corner {
+  background: #23272f;
+}
+
+/* For Firefox */
+html {
+  scrollbar-color: #444950 #23272f;
+  scrollbar-width: thin;
+}

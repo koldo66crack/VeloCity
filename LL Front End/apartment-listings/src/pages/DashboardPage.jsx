@@ -31,11 +31,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const prefsObj = await safeJson(
-        `${BASE_URL}/api/preferences/${userId}`,
-        null
-      );
-      setPrefs(prefsObj);
+      // const prefsObj = await safeJson(
+      //   `${BASE_URL}/api/preferences/${userId}`,
+      //   null
+      // );
+      // setPrefs(prefsObj);
 
       const savedRows = await safeJson(`${BASE_URL}/api/saved/${userId}`, []);
       setSavedIds(savedRows.map((r) => String(r.listingId)));
@@ -93,7 +93,7 @@ export default function DashboardPage() {
         >
           Saved Listings ({savedIds.length})
         </button>
-        <button
+        {/* <button
           onClick={() => setTab("prefs")}
           className={`px-4 py-2 cursor-pointer ${
             tab === "prefs"
@@ -102,7 +102,7 @@ export default function DashboardPage() {
           }`}
         >
           Preferences
-        </button>
+        </button> */}
         <button
           onClick={() => setTab("group")}
           className={`px-4 py-2 cursor-pointer ${
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           listings={visibleListings}
         />
       )}
-      {tab === "prefs" && <PreferencesTab prefs={prefs} userId={userId} />}
+      {/* {tab === "prefs" && <PreferencesTab prefs={prefs} userId={userId} />} */}
       {tab === "group" && <GroupActivityTab />}
     </div>
   );

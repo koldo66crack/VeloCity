@@ -15,14 +15,14 @@ export default function BedBathFilter({
 }) {
   const content = (
     <div className="w-[28rem] max-w-full">
-      <p className="font-semibold text-gray-800 mb-1">BEDROOMS</p>
-      <p className="text-xs text-gray-500 mb-2">Choose a filter</p>
+      <p className="font-semibold text-gray-200 mb-2 text-sm">Bedrooms</p>
+      <p className="text-xs text-gray-400 mb-3">Choose a filter</p>
       <div className="grid grid-cols-6 gap-2 mb-4">
         {["Any", "Studio", 1, 2, 3, "4+"].map((label) => (
           <button
             key={label}
-            className={`border px-2 py-1 text-sm hover:bg-blue-50 ${
-              tempBed === label ? "bg-blue-100" : ""
+            className={`border border-gray-600 px-2 py-1.5 text-xs rounded hover:bg-gray-700 transition-colors ${
+              tempBed === label ? "bg-green-600 text-white border-green-500" : "text-gray-300 hover:text-white"
             }`}
             onClick={() => setTempBed(label)}
           >
@@ -31,13 +31,13 @@ export default function BedBathFilter({
         ))}
       </div>
 
-      <p className="font-semibold text-gray-800 mb-1">BATHROOMS</p>
+      <p className="font-semibold text-gray-200 mb-2 text-sm">Bathrooms</p>
       <div className="grid grid-cols-5 gap-2 mb-4">
         {["Any", "1+", "1.5+", "2+", "3+"].map((label) => (
           <button
             key={label}
-            className={`border px-2 py-1 text-sm hover:bg-blue-50 ${
-              tempBath === label ? "bg-blue-100" : ""
+            className={`border border-gray-600 px-2 py-1.5 text-xs rounded hover:bg-gray-700 transition-colors ${
+              tempBath === label ? "bg-green-600 text-white border-green-500" : "text-gray-300 hover:text-white"
             }`}
             onClick={() => setTempBath(label)}
           >
@@ -46,52 +46,54 @@ export default function BedBathFilter({
         ))}
       </div>
 
-      <div className="flex justify-between text-sm">
-        <button
-          className="text-gray-400 hover:underline cursor-pointer"
-          onClick={() => {
-            setTempBed("any");
-            setTempBath("any");
-            if (setFilters && setOpenDropdown) {
-              setFilters((prev) => ({
-                ...prev,
-                bedrooms: "any",
-                bathrooms: "any",
-              }));
-              setOpenDropdown(null);
-            }
-            // On mobile, only update local state
-          }}
-        >
-          RESET
-        </button>
-        {/* Only render DONE if setFilters && setOpenDropdown exist (desktop). On mobile, handled by modal parent */}
-        {setFilters && setOpenDropdown && (
+      {!mobile && (
+        <div className="flex justify-between text-xs">
           <button
-            className="bg-[#34495e] text-white px-4 py-1 hover:cursor-pointer"
+            className="text-gray-400 hover:text-white hover:underline cursor-pointer"
             onClick={() => {
-              const parsedBed = tempBed === "Studio" ? 0 : tempBed;
-              const parsedBath = tempBath.replace("+", "");
-              setFilters((prev) => ({
-                ...prev,
-                bedrooms: parsedBed === "Any" ? "any" : parsedBed,
-                bathrooms: parsedBath === "Any" ? "any" : parsedBath,
-              }));
-              setOpenDropdown(null);
+              setTempBed("any");
+              setTempBath("any");
+              if (setFilters && setOpenDropdown) {
+                setFilters((prev) => ({
+                  ...prev,
+                  bedrooms: "any",
+                  bathrooms: "any",
+                }));
+                setOpenDropdown(null);
+              }
+              // On mobile, only update local state
             }}
           >
-            DONE
+            Reset
           </button>
-        )}
-      </div>
+          {/* Only render Done if setFilters && setOpenDropdown exist (desktop). On mobile, handled by modal parent */}
+          {setFilters && setOpenDropdown && (
+            <button
+              className="bg-green-600 text-white px-4 py-1.5 rounded cursor-pointer hover:bg-green-700 transition-colors"
+              onClick={() => {
+                const parsedBed = tempBed === "Studio" ? 0 : tempBed;
+                const parsedBath = tempBath.replace("+", "");
+                setFilters((prev) => ({
+                  ...prev,
+                  bedrooms: parsedBed === "Any" ? "any" : parsedBed,
+                  bathrooms: parsedBath === "Any" ? "any" : parsedBath,
+                }));
+                setOpenDropdown(null);
+              }}
+            >
+              Done
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 
   // Only desktop uses the dropdown wrapper; mobile renders a plain block.
   return mobile ? (
-    <div>{content}</div>
+    <div className="bg-gray-800 p-4 rounded-lg">{content}</div>
   ) : (
-    <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg p-4 w-[28rem]">
+    <div className="absolute top-full mt-2 left-0 z-50 bg-gray-800 border border-gray-700 shadow-lg p-4 rounded-lg w-[28rem]">
       {content}
     </div>
   );

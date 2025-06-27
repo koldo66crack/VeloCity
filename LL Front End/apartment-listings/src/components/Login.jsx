@@ -37,7 +37,7 @@ export default function Login() {
         placeholder="Email"
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
-        className="w-full p-2 border"
+        className="w-full p-3 bg-gray-900/50 border border-green-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 rounded-md"
         required
       />
       <input
@@ -45,13 +45,13 @@ export default function Login() {
         placeholder="Password"
         value={form.password}
         onChange={(e) => setForm({ ...form, password: e.target.value })}
-        className="w-full p-2 border"
+        className="w-full p-3 bg-gray-900/50 border border-green-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 rounded-md"
         required
       />
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#34495e] text-white py-2"
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
       >
         {loading ? "Logging in…" : "Log In"}
       </button>

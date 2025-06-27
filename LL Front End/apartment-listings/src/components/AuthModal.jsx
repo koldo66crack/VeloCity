@@ -11,21 +11,21 @@ export default function AuthModal() {
   if (!showAuthModal) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-white w-full max-w-md shadow-xl p-6 space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div className="bg-gray-900/95 backdrop-blur-sm w-full max-w-md shadow-2xl p-6 space-y-6 border border-green-500/30 rounded-lg">
         {/* Tabs */}
         <div className="flex justify-center gap-4">
           <button
-            className={`px-4 py-2 font-semibold ${
-              tab === "login" ? "border-b-2 border-[#34495e]" : "text-gray-500"
+            className={`px-4 py-2 font-semibold transition-colors duration-200 ${
+              tab === "login" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400 hover:text-green-400"
             }`}
             onClick={() => setTab("login")}
           >
             Log In
           </button>
           <button
-            className={`px-4 py-2 font-semibold ${
-              tab === "signup" ? "border-b-2 border-[#34495e]" : "text-gray-500"
+            className={`px-4 py-2 font-semibold transition-colors duration-200 ${
+              tab === "signup" ? "border-b-2 border-green-500 text-green-400" : "text-gray-400 hover:text-green-400"
             }`}
             onClick={() => setTab("signup")}
           >
@@ -43,7 +43,7 @@ export default function AuthModal() {
         {/* Close */}
         <button
           onClick={closeAuthModal}
-          className="absolute top-2 right-3 text-2xl leading-none text-gray-400 hover:text-gray-600"
+          className="absolute top-3 right-4 text-2xl leading-none text-gray-400 hover:text-green-400 transition-colors duration-200"
         >
           &times;
         </button>

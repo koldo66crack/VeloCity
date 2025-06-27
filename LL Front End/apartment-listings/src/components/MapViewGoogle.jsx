@@ -73,7 +73,7 @@ export default function MapViewGoogle({
   };
 
   if (!isLoaded)
-    return <div className="p-4">🗺️ Loading map…</div>;
+    return <div className="p-4 text-gray-200">🗺️ Loading map…</div>;
   if (!listings.length)
     return (
       <div className="h-full w-full overflow-hidden bg-gray-100 flex items-center justify-center">

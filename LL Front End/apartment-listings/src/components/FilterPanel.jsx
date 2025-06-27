@@ -1,36 +1,61 @@
 import React, { useState, useEffect, useRef } from "react";
-import location from "../assets/svg/location-svgrepo-com.svg";
-import dropdown from "../assets/svg/dropdown-svgrepo-com.svg";
 
 import LocationFilter from "./LocationFilter";
 import SortFilter from "./SortFilter";
 import PriceFilter from "./PriceFilter";
 import BedBathFilter from "./BedBathFilter";
-import LionScoreFilter from "./LionScoreFilter";
-import MarketplaceFilter from "./MarketplaceFilter";
 import TooltipInfo from "./TooltipInfo";
 
-// Helper: Count active filters
-function countActive(filters) {
-  let count = 0;
-  if (filters.areas && filters.areas.length > 0) count++;
-  if (filters.minPrice || filters.maxPrice) count++;
-  if (filters.bedrooms || filters.bathrooms) count++;
-  if (filters.lionScores && filters.lionScores.length > 0) count++;
-  if (filters.marketplaces && filters.marketplaces.length > 0) count++;
-  if (filters.sortOption && filters.sortOption !== "original") count++;
-  return count;
-}
+// Helper: A styled button for our filters
+const FilterButton = ({ onClick, children, isActive }) => (
+  <button
+    onClick={onClick}
+    className={`relative group flex items-center justify-between w-full md:w-auto md:min-w-[160px] bg-gray-800 text-gray-300 px-3 py-2 rounded-lg cursor-pointer transition-colors duration-300 text-sm ${
+      isActive ? "text-green-400" : "hover:text-white"
+    }`}
+  >
+    <div className="flex items-center gap-2">
+        {children}
+    </div>
+    {/* Static corner borders */}
+    <span className="absolute top-0 left-0 w-1/4 h-0.5 bg-green-400"></span>
+    <span className="absolute top-0 left-0 w-0.5 h-1/3 bg-green-400"></span>
+    <span className="absolute bottom-0 right-0 w-1/4 h-0.5 bg-green-400"></span>
+    <span className="absolute bottom-0 right-0 w-0.5 h-1/3 bg-green-400"></span>
+  </button>
+);
 
+// Helper: StreetEasy Toggle Switch
+const StreetEasyToggle = ({ enabled, setEnabled }) => (
+  <div className="flex items-center gap-3 text-xs text-gray-300">
+     <span className={!enabled ? 'text-green-400 font-semibold' : ''}>Off StreetEasy</span>
+    <button
+      onClick={() => setEnabled(!enabled)}
+      className={`relative inline-flex items-center h-5 rounded-full w-9 transition-colors duration-300 focus:outline-none ${
+        enabled ? "bg-green-500" : "bg-gray-600"
+      }`}
+    >
+      <span
+        className={`inline-block w-3 h-3 transform bg-white rounded-full transition-transform duration-300 ${
+          enabled ? "translate-x-5" : "translate-x-0.5"
+        }`}
+      />
+    </button>
+    <span className={enabled ? 'text-green-400 font-semibold' : ''}>On StreetEasy</span>
+  </div>
+);
+
+
+// Main Filter Panel Component
 export default function FilterPanel({
   filters,
   setFilters,
   allAreas,
-  allMarketplaces,
 }) {
-  // --- Dropdown logic for desktop ---
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [showMobileModal, setShowMobileModal] = useState(false);
 
+  // Local state for desktop filters
   const [tempAreas, setTempAreas] = useState(filters.areas);
   const [tempPrice, setTempPrice] = useState({
     min: filters.minPrice ?? "",
@@ -38,283 +63,146 @@ export default function FilterPanel({
   });
   const [tempBed, setTempBed] = useState(filters.bedrooms);
   const [tempBath, setTempBath] = useState(filters.bathrooms);
-  const [tempLionScores, setTempLionScores] = useState(filters.lionScores);
-  const [tempMarketplaces, setTempMarketplaces] = useState(
-    filters.marketplaces
-  );
-  const [tempSortOption, setTempSortOption] = useState(
-    filters.sortOption ?? "original"
-  );
-  const [showMobileModal, setShowMobileModal] = useState(false);
 
-  // Refs for closing dropdowns on outside click
+  // Temporary states for mobile modal
+  const [mobileTempAreas, setMobileTempAreas] = useState(filters.areas);
+  const [mobileTempPrice, setMobileTempPrice] = useState({
+    min: filters.minPrice ?? "",
+    max: filters.maxPrice ?? "",
+  });
+  const [mobileTempBed, setMobileTempBed] = useState(filters.bedrooms);
+  const [mobileTempBath, setMobileTempBath] = useState(filters.bathrooms);
+  const [tempSortOption, setTempSortOption] = useState(filters.sortOption ?? "original");
+
   const dropdownRefs = {
     location: useRef(),
     sort: useRef(),
     price: useRef(),
     beds: useRef(),
-    lion: useRef(),
-    marketplace: useRef(),
   };
 
   useEffect(() => {
     function handleClickOutside(e) {
-      Object.entries(dropdownRefs).forEach(([key, ref]) => {
-        if (ref.current && !ref.current.contains(e.target)) {
-          setOpenDropdown((d) => (d === key ? null : d));
-        }
-      });
+      if (
+        Object.values(dropdownRefs).every(
+          (ref) => ref.current && !ref.current.contains(e.target)
+        )
+      ) {
+        setOpenDropdown(null);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- Mobile Modal: Esc to close, disable scroll when open ---
+  // Mobile Modal management
   useEffect(() => {
     if (!showMobileModal) return;
-    function handleKey(e) {
-      if (e.key === "Escape") setShowMobileModal(false);
-    }
+    const handleKey = (e) => e.key === "Escape" && setShowMobileModal(false);
     document.addEventListener("keydown", handleKey);
-    document.body.style.overflow = showMobileModal ? "hidden" : "";
+    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "";
     };
   }, [showMobileModal]);
 
-  // For mobile: Reset temp states on open, apply on "Done"
-  function openMobileModal() {
-    setTempAreas(filters.areas);
-    setTempPrice({
-      min: filters.minPrice ?? "",
-      max: filters.maxPrice ?? "",
-    });
-    setTempBed(filters.bedrooms);
-    setTempBath(filters.bathrooms);
-    setTempLionScores(filters.lionScores);
-    setTempMarketplaces(filters.marketplaces);
+  const openMobileModal = () => {
+    // Sync temp states with main filters when opening
+    setMobileTempAreas(filters.areas);
+    setMobileTempPrice({ min: filters.minPrice ?? "", max: filters.maxPrice ?? "" });
+    setMobileTempBed(filters.bedrooms);
+    setMobileTempBath(filters.bathrooms);
     setTempSortOption(filters.sortOption ?? "original");
     setShowMobileModal(true);
-  }
+  };
 
-  function applyMobileFilters() {
-    // Defensive: treat "", "Any", null, undefined as "no filter" (undefined)
-    const normBed =
-      tempBed === undefined ||
-      tempBed === "" ||
-      tempBed === "Any" ||
-      tempBed === "any"
-        ? undefined
-        : tempBed === "Studio"
-        ? 0
-        : tempBed;
-    const normBath =
-      tempBath === undefined ||
-      tempBath === "" ||
-      tempBath === "Any" ||
-      tempBath === "any"
-        ? undefined
-        : typeof tempBath === "string" && tempBath.endsWith("+")
-        ? Number(tempBath.replace("+", ""))
-        : tempBath;
-    const normMin =
-      tempPrice.min === undefined || tempPrice.min === ""
-        ? undefined
-        : Number(tempPrice.min);
-    const normMax =
-      tempPrice.max === undefined || tempPrice.max === ""
-        ? undefined
-        : Number(tempPrice.max);
-
+  const applyMobileFilters = () => {
+    const normBed = mobileTempBed === "Any" ? undefined : mobileTempBed === "Studio" ? 0 : mobileTempBed;
+    const normBath = mobileTempBath === "Any" ? undefined : mobileTempBath;
     setFilters((prev) => ({
       ...prev,
-      areas: tempAreas,
-      minPrice: normMin,
-      maxPrice: normMax,
+      areas: mobileTempAreas,
+      minPrice: mobileTempPrice.min || undefined,
+      maxPrice: mobileTempPrice.max || undefined,
       bedrooms: normBed,
       bathrooms: normBath,
-      lionScores: tempLionScores,
-      marketplaces: tempMarketplaces,
       sortOption: tempSortOption,
     }));
     setShowMobileModal(false);
+  };
+  
+  const activeCount = [
+    filters.areas?.length > 0,
+    filters.minPrice || filters.maxPrice,
+    filters.bedrooms !== undefined,
+    filters.bathrooms !== undefined,
+    filters.sortOption !== "original",
+  ].filter(Boolean).length;
+
+  const renderDropdown = (filterName) => {
+    switch(filterName) {
+        case 'location':
+            return <LocationFilter allAreas={allAreas} tempAreas={tempAreas} setTempAreas={setTempAreas} setFilters={setFilters} setOpenDropdown={setOpenDropdown} />;
+        case 'sort':
+            return <div className="absolute top-full mt-2 left-0 z-50 bg-gray-800 border border-gray-700 shadow-lg rounded-lg"><SortFilter value={filters.sortOption || 'original'} setValue={(v) => setFilters(prev => ({...prev, sortOption: v}))} setFilters={setFilters} setOpenDropdown={setOpenDropdown} /></div>;
+        case 'price':
+            return <PriceFilter tempPrice={tempPrice} setTempPrice={setTempPrice} setFilters={setFilters} setOpenDropdown={setOpenDropdown} />;
+        case 'beds':
+            return <BedBathFilter tempBed={tempBed} tempBath={tempBath} setTempBed={setTempBed} setTempBath={setTempBath} setFilters={setFilters} setOpenDropdown={setOpenDropdown} />;
+        default:
+            return null;
+    }
   }
 
-  const activeCount = countActive(filters);
-
   return (
-    <header className="bg-gray-100 border-b sticky top-[64px] z-10">
-      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+    <header className="bg-gray-900 border-b border-gray-700 sticky top-[64px] z-20">
+      <div className=" mx-auto px-4 py-3 sm:px-6 lg:px-8">
+        
         {/* --------- DESKTOP VERSION --------- */}
-        <div className="hidden md:flex flex-wrap items-center gap-4">
-          {/* LOCATION */}
-          <div className="relative" ref={dropdownRefs.location}>
-            <button
-              onClick={() =>
-                setOpenDropdown(openDropdown === "location" ? null : "location")
-              }
-              className="flex items-center gap-2 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              <img src={location} alt="location" className="w-4 h-4" />
-              NEIGHBORHOOD
-            </button>
-            {openDropdown === "location" && (
-              <LocationFilter
-                allAreas={allAreas}
-                tempAreas={filters.areas}
-                setTempAreas={(v) =>
-                  setFilters((prev) => ({ ...prev, areas: v }))
-                }
-                setFilters={setFilters}
-                setOpenDropdown={setOpenDropdown}
-              />
-            )}
-          </div>
+        <div className="hidden md:flex justify-center flex-wrap items-center gap-3">
+            {/* NEIGHBORHOOD */}
+            <div className="relative" ref={dropdownRefs.location}>
+                <FilterButton onClick={() => setOpenDropdown(openDropdown === 'location' ? null : 'location')} isActive={openDropdown === 'location' || filters.areas?.length > 0}>
+                    <span className="font-medium">Neighborhood</span>
+                </FilterButton>
+                {openDropdown === 'location' && renderDropdown('location')}
+            </div>
 
-          {/* SORT */}
-          <div className="relative" ref={dropdownRefs.sort}>
-            <button
-              onClick={() =>
-                setOpenDropdown(openDropdown === "sort" ? null : "sort")
-              }
-              className="flex items-center gap-1 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              SORT
-              <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-            </button>
-            {openDropdown === "sort" && (
-              <div className="absolute top-7 left-0 z-50 bg-white border border-gray-300 shadow-lg">
-                <SortFilter
-                  value={filters.sortOption || "original"}
-                  setValue={() => {}} // No-op, as we apply instantly on desktop
-                  setFilters={setFilters}
-                  setOpenDropdown={setOpenDropdown}
-                />
-              </div>
-            )}
-          </div>
+            {/* SORT */}
+            <div className="relative" ref={dropdownRefs.sort}>
+                <FilterButton onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')} isActive={openDropdown === 'sort' || (filters.sortOption && filters.sortOption !== 'original')}>
+                    <span className="font-medium">Sort</span>
+                </FilterButton>
+                {openDropdown === 'sort' && renderDropdown('sort')}
+            </div>
 
-          {/* PRICE */}
-          <div className="relative" ref={dropdownRefs.price}>
-            <button
-              onClick={() =>
-                setOpenDropdown(openDropdown === "price" ? null : "price")
-              }
-              className="flex items-center gap-1 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              PRICE
-              <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-            </button>
-            {openDropdown === "price" && (
-              <PriceFilter
-                tempPrice={{
-                  min: filters.minPrice ?? "",
-                  max: filters.maxPrice ?? "",
-                }}
-                setTempPrice={(v) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    minPrice: v.min,
-                    maxPrice: v.max,
-                  }))
-                }
-                setFilters={setFilters}
-                setOpenDropdown={setOpenDropdown}
-              />
-            )}
-          </div>
+            {/* PRICE */}
+            <div className="relative" ref={dropdownRefs.price}>
+                <FilterButton onClick={() => setOpenDropdown(openDropdown === 'price' ? null : 'price')} isActive={openDropdown === 'price' || filters.minPrice || filters.maxPrice}>
+                    <span className="font-medium">Price</span>
+                </FilterButton>
+                {openDropdown === 'price' && renderDropdown('price')}
+            </div>
 
-          {/* BED / BATH */}
-          <div className="relative" ref={dropdownRefs.beds}>
-            <button
-              onClick={() =>
-                setOpenDropdown(openDropdown === "beds" ? null : "beds")
-              }
-              className="flex items-center gap-1 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              BEDS / BATHS
-              <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-            </button>
-            {openDropdown === "beds" && (
-              <BedBathFilter
-                tempBed={filters.bedrooms}
-                tempBath={filters.bathrooms}
-                setTempBed={(v) =>
-                  setFilters((prev) => ({ ...prev, bedrooms: v }))
-                }
-                setTempBath={(v) =>
-                  setFilters((prev) => ({ ...prev, bathrooms: v }))
-                }
-                setFilters={setFilters}
-                setOpenDropdown={setOpenDropdown}
-              />
-            )}
-          </div>
-
-          {/* VELO SCORE */}
-          <div className="relative" ref={dropdownRefs.lion}>
-            <button
-              onClick={() =>
-                setOpenDropdown(openDropdown === "lion" ? null : "lion")
-              }
-              className="flex items-center gap-1 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              VELO SCORE
-              <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-              <TooltipInfo
-                text={`VeloScore™ tells you if the apartment's price matches its value.`}
-              />
-            </button>
-            {openDropdown === "lion" && (
-              <LionScoreFilter
-                tempLionScores={filters.lionScores}
-                setTempLionScores={(v) =>
-                  setFilters((prev) => ({ ...prev, lionScores: v }))
-                }
-                setFilters={setFilters}
-                setOpenDropdown={setOpenDropdown}
-              />
-            )}
-          </div>
-
-          {/* SOURCE */}
-          <div className="relative" ref={dropdownRefs.marketplace}>
-            <button
-              onClick={() =>
-                setOpenDropdown(
-                  openDropdown === "marketplace" ? null : "marketplace"
-                )
-              }
-              className="flex items-center gap-1 text-sm text-[#34495e] font-semibold hover:underline"
-            >
-              SOURCE
-              <img src={dropdown} alt="dropdown" className="w-3 h-3" />
-              <TooltipInfo text="Where this listing is originally posted (e.g., StreetEasy, Compass, RentHop, etc.)." />
-            </button>
-            {openDropdown === "marketplace" && (
-              <MarketplaceFilter
-                allMarketplaces={allMarketplaces}
-                tempMarketplaces={filters.marketplaces}
-                setTempMarketplaces={(v) =>
-                  setFilters((prev) => ({ ...prev, marketplaces: v }))
-                }
-                setFilters={setFilters}
-                setOpenDropdown={setOpenDropdown}
-              />
-            )}
-          </div>
+            {/* BEDS / BATHS */}
+            <div className="relative" ref={dropdownRefs.beds}>
+                <FilterButton onClick={() => setOpenDropdown(openDropdown === 'beds' ? null : 'beds')} isActive={openDropdown === 'beds' || filters.bedrooms !== undefined || filters.bathrooms !== undefined}>
+                    <span className="font-medium">Beds / Baths</span>
+                </FilterButton>
+                {openDropdown === 'beds' && renderDropdown('beds')}
+            </div>
         </div>
 
         {/* --------- MOBILE VERSION --------- */}
         <div className="flex md:hidden items-center">
           <button
-            className="w-full flex justify-center items-center bg-white text-[#34495e] font-bold py-2 shadow border border-[#34495e] text-lg relative"
+            className="w-full flex justify-center items-center bg-gray-800 text-gray-200 font-medium py-2.5 shadow-md border border-gray-700 rounded-lg text-sm relative"
             onClick={openMobileModal}
           >
             <span className="mr-2">Filters</span>
             {activeCount > 0 && (
-              <span className="bg-[#34495e] text-white rounded-full px-2 py-0.5 text-xs font-semibold ml-1">
+              <span className="bg-green-500 text-white rounded-full px-2 py-0.5 text-xs font-semibold ml-1">
                 {activeCount}
               </span>
             )}
@@ -323,106 +211,50 @@ export default function FilterPanel({
 
         {/* MOBILE FILTER MODAL */}
         {showMobileModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-end md:hidden">
-            <div className="w-full max-h-[90vh] bg-white shadow-lg p-6 overflow-y-auto animate-fadein">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-lg font-bold text-[#34495e]">Filters</div>
+          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-end md:hidden">
+            <div className="w-full max-h-[90vh] bg-gray-900 border-t border-gray-700 rounded-t-2xl shadow-lg p-6 overflow-y-auto animate-fadein">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-white">Filters</h3>
                 <button
                   onClick={() => setShowMobileModal(false)}
-                  className="text-gray-400 hover:text-[#34495e] text-2xl font-bold"
+                  className="text-gray-400 hover:text-white text-2xl font-bold"
                   aria-label="Close"
                 >
-                  ×
+                  &times;
                 </button>
               </div>
               <div className="flex flex-col gap-6">
                 {/* Neighborhood */}
                 <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1 flex items-center gap-2">
-                    <img src={location} alt="location" className="w-4 h-4" />
-                    Neighborhood
-                  </div>
-                  <LocationFilter
-                    allAreas={allAreas}
-                    tempAreas={tempAreas}
-                    setTempAreas={setTempAreas}
-                    mobile={true}
-                  />
+                  <h4 className="text-sm font-semibold text-white mb-2">Neighborhood</h4>
+                  <LocationFilter allAreas={allAreas} tempAreas={mobileTempAreas} setTempAreas={setMobileTempAreas} mobile={true}/>
                 </div>
 
                 {/* Sort */}
                 <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1">
-                    Sort
-                  </div>
-                  <SortFilter
-                    value={tempSortOption}
-                    setValue={setTempSortOption}
-                    mobile={true}
-                  />
+                    <h4 className="text-sm font-semibold text-white mb-2">Sort</h4>
+                    <SortFilter value={tempSortOption} setValue={setTempSortOption} mobile={true} />
                 </div>
 
                 {/* Price */}
                 <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1">
-                    Price
-                  </div>
-                  <PriceFilter
-                    tempPrice={tempPrice}
-                    setTempPrice={setTempPrice}
-                    mobile={true}
-                  />
+                    <h4 className="text-sm font-semibold text-white mb-2">Price</h4>
+                    <PriceFilter tempPrice={mobileTempPrice} setTempPrice={setMobileTempPrice} mobile={true} />
                 </div>
 
                 {/* Bed/Bath */}
                 <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1">
-                    Beds / Baths
-                  </div>
-                  <BedBathFilter
-                    tempBed={tempBed}
-                    tempBath={tempBath}
-                    setTempBed={setTempBed}
-                    setTempBath={setTempBath}
-                    mobile={true}
-                  />
+                    <h4 className="text-sm font-semibold text-white mb-2">Beds / Baths</h4>
+                    <BedBathFilter tempBed={mobileTempBed} tempBath={mobileTempBath} setTempBed={setMobileTempBed} setTempBath={setMobileTempBath} mobile={true} />
                 </div>
 
-                {/* VeloScore */}
-                <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1 flex items-center gap-2">
-                    VeloScore
-                    <TooltipInfo
-                      text={`VeloScore™ tells you if the apartment's price matches its value.`}
-                    />
-                  </div>
-                  <LionScoreFilter
-                    tempLionScores={tempLionScores}
-                    setTempLionScores={setTempLionScores}
-                    mobile={true}
-                  />
-                </div>
-
-                {/* Source */}
-                <div>
-                  <div className="text-xs text-[#34495e] font-semibold mb-1 flex items-center gap-2">
-                    Source
-                    <TooltipInfo text="Where this listing is originally posted (e.g., StreetEasy, Compass, RentHop, etc.)." />
-                  </div>
-                  <MarketplaceFilter
-                    allMarketplaces={allMarketplaces}
-                    tempMarketplaces={tempMarketplaces}
-                    setTempMarketplaces={setTempMarketplaces}
-                    mobile={true}
-                  />
-                </div>
               </div>
-              <div className="mt-8 flex">
+              <div className="mt-8 flex sticky bottom-0 bg-gray-900 py-4">
                 <button
-                  className="flex-1 bg-[#34495e] text-white py-3 font-semibold text-lg"
+                  className="flex-1 bg-green-600 text-white py-3 font-semibold text-sm rounded-lg hover:bg-green-700 transition-colors"
                   onClick={applyMobileFilters}
                 >
-                  Done
+                  Apply Filters
                 </button>
               </div>
             </div>

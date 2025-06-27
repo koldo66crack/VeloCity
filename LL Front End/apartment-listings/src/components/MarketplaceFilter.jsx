@@ -1,5 +1,15 @@
 import React from "react";
 
+// Add normalization function (copy from useFilteredListings.js)
+function normalizeMarketplace(mp) {
+  if (!mp) return "";
+  return mp
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default function MarketplaceFilter({
   allMarketplaces,
   tempMarketplaces,
@@ -8,22 +18,26 @@ export default function MarketplaceFilter({
   setOpenDropdown,
   mobile = false, // If inside modal, pass mobile={true}
 }) {
+  // Normalize all marketplaces for display and filter
+  const normalizedAllMarketplaces = allMarketplaces.map(normalizeMarketplace);
+  const normalizedTempMarketplaces = tempMarketplaces.map(normalizeMarketplace);
+
   const handleCheckboxChange = (mp, checked) => {
     const updated = checked
-      ? [...tempMarketplaces, mp]
-      : tempMarketplaces.filter((m) => m !== mp);
+      ? [...normalizedTempMarketplaces, mp]
+      : normalizedTempMarketplaces.filter((m) => m !== mp);
     setTempMarketplaces(updated);
   };
 
   const content = (
     <div className="w-80 max-w-full">
       <div className="grid grid-cols-2 gap-2 text-sm">
-        {allMarketplaces.map((mp) => (
+        {normalizedAllMarketplaces.map((mp) => (
           <label key={mp} className="flex items-center gap-2">
             <input
               type="checkbox"
               className="accent-[#34495e]"
-              checked={tempMarketplaces.includes(mp)}
+              checked={normalizedTempMarketplaces.includes(mp)}
               onChange={(e) => handleCheckboxChange(mp, e.target.checked)}
             />
             <span>{mp}</span>
@@ -33,7 +47,7 @@ export default function MarketplaceFilter({
       <div className="flex justify-between text-sm mt-3">
         <button
           className="text-gray-400 hover:underline cursor-pointer"
-          onClick={() => setTempMarketplaces([...allMarketplaces])}
+          onClick={() => setTempMarketplaces([...normalizedAllMarketplaces])}
         >
           RESET
         </button>
@@ -43,7 +57,7 @@ export default function MarketplaceFilter({
             onClick={() => {
               setFilters((prev) => ({
                 ...prev,
-                marketplaces: tempMarketplaces,
+                marketplaces: normalizedTempMarketplaces,
               }));
               setOpenDropdown(null);
             }}

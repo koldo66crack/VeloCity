@@ -1,11 +1,10 @@
-// src/components/Navbar.jsx
-
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/useAuth";
 import { useUI } from "../store/useUI";
-import velocity from "../assets/svg/navbar_logo.svg"; // Main logo
-import velocityMenu from "../assets/svg/title_logo.svg"; // Double-arrow SVG
+import velocity from "../assets/svg/navbar_logo_white.svg";
+import velocityMenu from "../assets/svg/title_logo_white.svg";
+import search from "../assets/svg/search-svgrepo-com.svg";
 import dropdown from "../assets/svg/dropdown-svgrepo-com.svg";
 
 export default function Navbar() {
@@ -36,25 +35,41 @@ export default function Navbar() {
   };
 
   // Logo click handler
-  const handleLogoClick = () => {
-    if (user && user.id) {
-      navigate(`/home/${user.id}`);
-    } else {
-      navigate("/home");
-    }
-  };
+  // const handleLogoClick = () => {
+  //   if (user && user.id) {
+  //     navigate(`/home/${user.id}`);
+  //   } else {
+  //     navigate("/home");
+  //   }
+  // };
 
   return (
-    <nav className="bg-white fixed w-full z-50 top-0 border-b border-[#34495e]">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 relative">
+    <nav className="bg-black/80 backdrop-blur-sm fixed w-full z-50 top-0 border-b border-green-500/30">
+      <div className=" mx-auto flex items-center justify-between px-4 py-3 relative">
         {/* ---- DESKTOP NAV ---- */}
         <div className="hidden md:flex w-full items-center justify-between">
           {/* Left: Logo */}
           <div
             className="flex items-center cursor-pointer"
-            onClick={handleLogoClick}
+            onClick={() => navigate("/")}
           >
             <img src={velocity} alt="VeloCity Logo" className="h-10 w-auto" />
+          </div>
+
+          {/* Center: Search Bar */}
+          <div className="flex-grow flex justify-center max-w-md mx-8">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search address..."
+                className="pl-10 pr-4 py-2 bg-gray-900/50 border border-green-500/30 w-full text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-md transition-colors duration-200"
+              />
+              <img
+                src={search}
+                alt="Search"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              />
+            </div>
           </div>
 
           {/* Right: Menu */}
@@ -62,14 +77,14 @@ export default function Navbar() {
             {!user ? (
               <button
                 onClick={openAuthModal}
-                className="text-sm font-medium text-gray-700 hover:text-[#34495e]"
+                className="text-sm font-medium text-gray-300 hover:text-green-400 transition-colors duration-200"
               >
                 Sign In / Sign Up
               </button>
             ) : (
               <>
                 <button
-                  className="cursor-pointer text-gray-700 hover:text-[#34495e] font-medium"
+                  className="cursor-pointer text-gray-300 hover:text-green-400 transition-colors duration-200 font-medium"
                   onClick={() => navigate("/dashboard")}
                 >
                   My Dashboard
@@ -77,7 +92,7 @@ export default function Navbar() {
                 {/* Account Dropdown */}
                 <div className="relative group" ref={dropdownRef}>
                   <button
-                    className="flex items-center gap-1 text-sm text-gray-700 hover:text-[#34495e]"
+                    className="flex items-center gap-1 text-sm text-gray-300 hover:text-green-400 transition-colors duration-200"
                     onClick={() => setDropdownOpen((v) => !v)}
                   >
                     {user.name || user.email}
@@ -90,24 +105,24 @@ export default function Navbar() {
                     />
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg z-20 flex flex-col">
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-900/95 backdrop-blur-sm border border-green-500/30 shadow-lg z-20 flex flex-col rounded-md">
                       <Link
                         to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                         onClick={() => setDropdownOpen(false)}
                       >
                         Profile
                       </Link>
                       <Link
                         to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                         onClick={() => setDropdownOpen(false)}
                       >
                         Settings
                       </Link>
                       <button
                         onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                       >
                         Sign Out
                       </button>
@@ -127,7 +142,7 @@ export default function Navbar() {
           {/* Centered Logo */}
           <div
             className="flex-1 flex justify-center cursor-pointer"
-            onClick={handleLogoClick}
+            onClick={() => navigate("/")}
           >
             <img src={velocity} alt="VeloCity Logo" className="h-10 w-auto" />
           </div>
@@ -145,22 +160,36 @@ export default function Navbar() {
 
           {/* Mobile Menu Drawer */}
           {menuOpen && (
-            <div className="fixed top-16 right-3 w-60 bg-white shadow-xl border border-gray-200 animate-fadein z-50">
+            <div className="fixed top-16 right-3 w-60 bg-gray-900/95 backdrop-blur-sm shadow-2xl border border-green-500/30 animate-fadein z-50 rounded-lg">
               <div className="flex flex-col p-3">
+                {/* Search Bar for Mobile */}
+                <div className="relative mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search address..."
+                    className="pl-10 pr-4 py-2 bg-gray-800/50 border border-green-500/30 w-full text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-md transition-colors duration-200"
+                  />
+                  <img
+                    src={search}
+                    alt="Search"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                  />
+                </div>
+
                 {!user ? (
                   <button
                     onClick={() => {
                       openAuthModal();
                       setMenuOpen(false);
                     }}
-                    className="w-full py-3 font-semibold text-[#34495e] hover:bg-gray-100 transition"
+                    className="w-full py-3 font-semibold text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200 rounded-md"
                   >
                     Sign In / Sign Up
                   </button>
                 ) : (
                   <>
                     <button
-                      className="w-full py-3 font-semibold text-[#34495e] hover:bg-gray-100 text-left"
+                      className="w-full py-3 font-semibold text-gray-300 hover:bg-green-500/20 hover:text-green-400 text-left transition-colors duration-200 rounded-md"
                       onClick={() => {
                         navigate("/dashboard");
                         setMenuOpen(false);
@@ -171,7 +200,7 @@ export default function Navbar() {
                     {/* Account button */}
                     <div className="relative mt-2" ref={dropdownRef}>
                       <button
-                        className="flex items-center justify-between w-full py-3 px-2 font-semibold text-[#34495e] hover:bg-gray-100"
+                        className="flex items-center justify-between w-full py-3 px-2 font-semibold text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200 rounded-md"
                         onClick={() => setDropdownOpen((v) => !v)}
                       >
                         {user.name || user.email}
@@ -184,17 +213,17 @@ export default function Navbar() {
                         />
                       </button>
                       {dropdownOpen && (
-                        <div className="absolute left-0 top-14 w-full bg-white border border-gray-100 shadow-lg flex flex-col z-10">
+                        <div className="absolute left-0 top-14 w-full bg-gray-800/95 backdrop-blur-sm border border-green-500/30 shadow-lg flex flex-col z-10 rounded-md">
                           <Link
                             to="/profile"
-                            className="px-4 py-2 text-sm text-[#34495e] hover:bg-gray-50"
+                            className="px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                             onClick={() => setMenuOpen(false)}
                           >
                             Profile
                           </Link>
                           <Link
                             to="/settings"
-                            className="px-4 py-2 text-sm text-[#34495e] hover:bg-gray-50"
+                            className="px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                             onClick={() => setMenuOpen(false)}
                           >
                             Settings
@@ -204,7 +233,7 @@ export default function Navbar() {
                               setMenuOpen(false);
                               handleSignOut();
                             }}
-                            className="px-4 py-2 text-sm text-[#34495e] text-left hover:bg-gray-50"
+                            className="px-4 py-2 text-sm text-gray-300 text-left hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                           >
                             Sign Out
                           </button>
@@ -221,16 +250,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
-// (Optional) Add to tailwind.config.js for animation
-// theme: {
-//   extend: {
-//     keyframes: {
-//       fadein: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-//     },
-//     animation: {
-//       fadein: 'fadein 0.2s ease',
-//     },
-//   },
-// }
-

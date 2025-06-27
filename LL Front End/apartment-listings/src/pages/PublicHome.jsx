@@ -87,7 +87,7 @@ export default function PublicHome() {
   if (!filters) return null;
 
   return (
-    <div className="pt-10">
+    <div className="pt-10 bg-gray-900 min-h-screen">
       <FilterPanel
         listings={listings}
         filters={filters}

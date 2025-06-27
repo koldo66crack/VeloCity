@@ -154,33 +154,33 @@ export default function MemberHome() {
   }, [uid, filters]);
 
   // Save preferences if changed
-  useEffect(() => {
-    if (!prefLoaded || !filters || !origFilters) return;
-    if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
-      if (window.confirm("Save new preferences?")) {
-        const payload = {
-          userId: uid,
-          minBudget: filters.minPrice,
-          maxBudget: filters.maxPrice,
-          bedrooms: filters.bedrooms === "any" ? null : Number(filters.bedrooms),
-          bathrooms: filters.bathrooms === "any" ? null : Number(filters.bathrooms),
-          lionScores: filters.lionScores,
-          marketplaces: filters.marketplaces,
-          areas: filters.areas,
-          onlyNoFee: filters.onlyNoFee,
-          onlyFeatured: filters.onlyFeatured,
-          maxComplaints: filters.maxComplaints,
-        };
-        fetch(`${BASE_URL}/api/preferences`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).then(() => setOrigFilters(filters));
-      } else {
-        setFilters(origFilters);
-      }
-    }
-  }, [filters, origFilters, prefLoaded, uid]);
+  // useEffect(() => {
+  //   if (!prefLoaded || !filters || !origFilters) return;
+  //   if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
+  //     if (window.confirm("Save new preferences?")) {
+  //       const payload = {
+  //         userId: uid,
+  //         minBudget: filters.minPrice,
+  //         maxBudget: filters.maxPrice,
+  //         bedrooms: filters.bedrooms === "any" ? null : Number(filters.bedrooms),
+  //         bathrooms: filters.bathrooms === "any" ? null : Number(filters.bathrooms),
+  //         lionScores: filters.lionScores,
+  //         marketplaces: filters.marketplaces,
+  //         areas: filters.areas,
+  //         onlyNoFee: filters.onlyNoFee,
+  //         onlyFeatured: filters.onlyFeatured,
+  //         maxComplaints: filters.maxComplaints,
+  //       };
+  //       fetch(`${BASE_URL}/api/preferences`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(payload),
+  //       }).then(() => setOrigFilters(filters));
+  //     } else {
+  //       setFilters(origFilters);
+  //     }
+  //   }
+  // }, [filters, origFilters, prefLoaded, uid]);
 
   // ---- Handlers ----
   const handleSave = (listingId) => {
@@ -249,7 +249,7 @@ export default function MemberHome() {
   if (!filters) return null;
 
   return (
-    <div className="pt-10">
+    <div className="pt-10 bg-gray-900 min-h-screen">
       <FilterPanel
         listings={listings}
         filters={filters}

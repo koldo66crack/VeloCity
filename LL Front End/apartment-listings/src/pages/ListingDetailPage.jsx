@@ -8,8 +8,10 @@ import bed from "../assets/svg/bed-double-svgrepo-com.svg";
 import bath from "../assets/svg/bath-svgrepo-com.svg";
 import size from "../assets/svg/ruler-angular-svgrepo-com.svg";
 import walking from "../assets/svg/walking-time-svgrepo-com.svg";
+import titleLogoWhite from "../assets/svg/title_logo_white.svg";
 
 import { useState } from "react";
+import ListingAIChat from "../components/ListingAIChat";
 
 const COLUMBIA_COORDS = { lat: 40.816151, lng: -73.943653 };
 
@@ -39,11 +41,9 @@ export default function ListingDetailPage() {
   const pricePerBed =
     listing.bedrooms && listing.bedrooms > 0 ? price / listing.bedrooms : null;
 
-  const fullAddress = `${listing.addr_street || ""} ${
-    listing.addr_unit || ""
-  }, ${listing.addr_city || ""}, ${listing.addr_state || ""} ${
-    listing.addr_zip || ""
-  }`;
+  const fullAddress = `${listing.addr_street || ""} ${listing.addr_unit || ""
+    }, ${listing.addr_city || ""}, ${listing.addr_state || ""} ${listing.addr_zip || ""
+    }`;
 
   const complaints = listing.building_complaints || {};
   const complaintEntries = Object.entries(complaints).filter(
@@ -55,94 +55,44 @@ export default function ListingDetailPage() {
     ? listing.marketplace.join(", ")
     : listing.marketplace || listing.listed_by || "unknown";
 
+  // --- AMENITIES PARSING ---
+  // Try to extract amenities from a field, else parse from description
+  let amenities = [];
+  if (listing.amenities && Array.isArray(listing.amenities)) {
+    amenities = listing.amenities;
+  } else if (listing.description) {
+    // Simple amenities extraction from description (look for lines with '- ' or '* ')
+    const matches = listing.description.match(/(?:[-*•]\s*)([A-Za-z0-9 ,\-/()]+)(?=\n|$)/g);
+    if (matches) {
+      amenities = matches.map((m) => m.replace(/^[-*•]\s*/, "").trim());
+    } else {
+      // Fallback: look for common amenity keywords
+      const amenityKeywords = [
+        "Dishwasher", "Hardwood Floors", "Elevator", "Laundry", "Microwave", "Stainless Steel", "Doorman", "Gym", "Balcony", "Fireplace", "Closet", "Washer", "Dryer", "Central Air", "Parking", "Pet Friendly", "Roof Deck", "Virtual Doorman", "Storage", "Garden", "Terrace", "Furnished"
+      ];
+      const desc = listing.description.toLowerCase();
+      amenities = amenityKeywords.filter((k) => desc.includes(k.toLowerCase()));
+    }
+  }
+
   return (
-    <div className="max-w-7xl mx-auto pt-36 px-4 py-4">
-      <div className="flex flex-col md:flex-row md:items-start gap-8">
+    <div className="mx-auto mt-12 px-4 py-12 md:pt-16 bg-gray-900">
+      {/* AI Chat Component */}
+      {/* <div className="mb-8">
+        <ListingAIChat listing={listing} />
+      </div> */}
+
+      <div className="max-w-5xl mx-auto flex flex-col items-center md:flex-row gap-8 md:gap-12">
+        {/* LEFT: Main Info */}
         <div className="md:w-1/2 space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
-
-          <div className="text-xl font-semibold text-gray-700">
-            Price:{" "}
-            <span className="text-2xl font-bold text-[#34495e]">
-              $
-              {Number(price).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-
-          <div className="text-md font-medium mb-2">
-            <span className="text-gray-700">Price per Bed:</span>{" "}
-            {listing.bedrooms === 0 ? (
-              <span className="text-green-700 font-bold">
-                $
-                {Number(price).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                <span className="text-xs text-gray-500">(Studio)</span>
-              </span>
-            ) : listing.bedrooms && listing.bedrooms > 0 ? (
-              <span className="text-green-700 font-bold">
-                $
-                {Number(pricePerBed).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            ) : (
-              <span className="text-gray-400 italic">Not available</span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-lg font-medium text-gray-800 border-t pt-4 mt-2">
-            <span className="flex items-center gap-2">
-              <img src={bed} alt="Beds" className="w-5 h-5" />{" "}
-              {listing.bedrooms === 0
-                ? "Studio"
-                : listing.bedrooms !== undefined
-                ? `${listing.bedrooms} bed`
-                : "—"}
-            </span>
-            <span className="flex items-center gap-2">
-              <img src={bath} alt="Baths" className="w-5 h-5" />{" "}
-              {listing.bathrooms !== undefined ? listing.bathrooms : "—"} bath
-            </span>
-            <span className="flex items-center gap-2">
-              <img src={size} alt="Size" className="w-5 h-5" />{" "}
-              {listing.size_sqft ? Number(listing.size_sqft).toFixed(2) : "—"}{" "}
-              ft²
-            </span>
-            <span className="flex items-center gap-2">
-              <img src={walking} alt="Walking" className="w-5 h-5" /> {distance}{" "}
-              mi to Columbia
-            </span>
-          </div>
-
-          {listing.LionScore && (
-            <div className="mt-4">
-              <span className="block text-sm font-medium text-gray-500 mb-1">
-                VeloScore™
-              </span>
-              <div
-                className={`text-lg font-bold ${
-                  lionScoreColors[listing.LionScore]
-                }`}
-              >
-                {listing.LionScore}
-              </div>
-            </div>
-          )}
-
-          <div className="relative w-full h-100 rounded-lg overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
-            {Array.isArray(listing.photos_url) &&
-            listing.photos_url.length > 0 ? (
+          {/* --- IMAGE GALLERY --- */}
+          <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl bg-gray-700 flex items-center justify-center mb-4">
+            {Array.isArray(listing.photos_url) && listing.photos_url.length > 0 ? (
               <>
                 <img
                   src={listing.photos_url[imageIndex]}
                   alt={`Image ${imageIndex + 1}`}
-                  className="h-full max-w-full object-contain transition-transform duration-300"
+                  className="h-full w-full object-cover transition-transform duration-300"
                 />
                 {listing.photos_url.length > 1 && (
                   <>
@@ -156,7 +106,7 @@ export default function ListingDetailPage() {
                           prev === 0 ? listing.photos_url.length - 1 : prev - 1
                         );
                       }}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-900/80 hover:bg-gray-700 p-2 rounded-full shadow"
                     >
                       ⟨
                     </button>
@@ -170,7 +120,7 @@ export default function ListingDetailPage() {
                           prev === listing.photos_url.length - 1 ? 0 : prev + 1
                         );
                       }}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-900/80 hover:bg-gray-700 p-2 rounded-full shadow"
                     >
                       ⟩
                     </button>
@@ -181,9 +131,8 @@ export default function ListingDetailPage() {
                   {listing.photos_url.map((_, idx) => (
                     <span
                       key={idx}
-                      className={`inline-block w-2 h-2 rounded-full ${
-                        idx === imageIndex ? "bg-[#34495e]" : "bg-gray-300"
-                      }`}
+                      className={`inline-block w-2 h-2 rounded-full ${idx === imageIndex ? "bg-green-400" : "bg-gray-500"
+                        }`}
                     />
                   ))}
                 </div>
@@ -196,61 +145,98 @@ export default function ListingDetailPage() {
                   "https://via.placeholder.com/800x400?text=No+Image"
                 }
                 alt="No photos"
-                className="h-full max-w-full object-contain"
+                className="h-full w-full object-cover"
               />
             )}
           </div>
-
-          <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 space-y-2">
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">
-              Description
-            </h2>
-            <p className="text-sm text-gray-700 leading-relaxed">
+          {/* --- TITLE & PRICE --- */}
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-1">
+              {listing.title}
+            </h1>
+            <span className="text-xl md:text-2xl font-bold text-green-400">
+              ${Number(price).toLocaleString(undefined, { minimumFractionDigits: 0 })}
+            </span>
+          </div>
+          {/* --- BED/BATH/SQFT/ETC --- */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-base md:text-lg font-medium text-gray-300 border-t border-gray-700 pt-4 mt-2">
+            <span className="flex items-center gap-2">
+              <img src={bed} alt="Beds" className="w-5 h-5" />
+              {listing.bedrooms === 0 ? "Studio" : listing.bedrooms !== undefined ? `${listing.bedrooms} bed` : "—"}
+            </span>
+            <span className="flex items-center gap-2">
+              <img src={bath} alt="Baths" className="w-5 h-5" />
+              {listing.bathrooms !== undefined ? listing.bathrooms : "—"} bath
+            </span>
+            <span className="flex items-center gap-2">
+              <img src={size} alt="Size" className="w-5 h-5" />
+              {listing.size_sqft ? Number(listing.size_sqft).toFixed(0) : "—"} ft²
+            </span>
+            <span className="flex items-center gap-2">
+              <img src={walking} alt="Walking" className="w-5 h-5" />
+              {distance} mi to Columbia
+            </span>
+          </div>
+          {/* --- AMENITIES --- */}
+          {amenities.length > 0 && (
+            <div className="bg-gray-700 p-5 rounded-xl shadow-md border border-gray-700 mt-4">
+              <h2 className="text-lg font-bold text-white border-b border-gray-700 pb-1 mb-2 flex items-center gap-2">
+                Amenities
+              </h2>
+              <ul className="space-y-2 mt-2">
+                {amenities.map((am, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-gray-200 text-base">
+                    <img src={titleLogoWhite} alt="Amenity" className="w-5 h-5 inline-block" />
+                    <span>{am}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* --- DESCRIPTION --- */}
+          <div className="bg-gray-700 p-5 rounded-xl shadow-md border border-gray-700 mt-4">
+            <h2 className="text-lg font-bold text-white border-b border-gray-700 pb-1 mb-2">Description</h2>
+            <p className="text-gray-300 text-base leading-relaxed">
               {listing.description || "No description provided."}
             </p>
           </div>
-
-          <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 space-y-2">
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-1">
-              Building Complaints
-            </h2>
-            {hasVisibleComplaints ? (
-              <ul className="list-disc pl-5 text-sm text-gray-700">
-                {complaintEntries
-                  .filter(([_, count]) => count > 5)
-                  .map(([type, count]) => (
-                    <li key={type}>
-                      <strong>{type}</strong>: {count} reports
-                    </li>
-                  ))}
-              </ul>
-            ) : (
-              <p className="text-yellow-500 text-sm font-semibold">
-                ✨ Squeaky clean! No notable complaints here. ✨
-              </p>
-            )}
-          </div>
         </div>
-
+        {/* RIGHT: Map & Source */}
         <div className="md:w-1/2 space-y-4">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-lg font-bold mb-3">Map View</h2>
+          <div className="bg-gray-700 p-4 rounded-xl shadow-md border border-gray-700">
+            <h2 className="text-lg font-bold text-white mb-3">Map View</h2>
             <div className="w-full h-80 rounded-md overflow-hidden">
               <MapViewGoogle listings={[listing]} />
             </div>
           </div>
-
           <a
             href={listing.source_url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-center bg-[#34495e] hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors w-full shadow-sm"
+            className="inline-block text-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors w-full shadow-sm mt-2"
           >
             View Original Listing ↗
           </a>
-          <p className="text-xs text-center text-gray-400 italic">
+          <p className="text-xs text-center text-gray-400 italic mt-2">
             Listed by {displayMarketplaces}
           </p>
+          {/* --- BUILDING COMPLAINTS --- */}
+          <div className="bg-gray-700 p-5 rounded-xl shadow-md border border-gray-700 mt-4">
+            <h2 className="text-lg font-bold text-white border-b border-gray-700 pb-1 mb-2">Building Complaints</h2>
+            {hasVisibleComplaints ? (
+              <ul className="list-disc pl-5 text-base text-gray-300">
+                {complaintEntries.filter(([_, count]) => count > 5).map(([type, count]) => (
+                  <li key={type}>
+                    <strong>{type}</strong>: {count} reports
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-green-400 text-base font-semibold">
+                ✨ Squeaky clean! No notable complaints here. ✨
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

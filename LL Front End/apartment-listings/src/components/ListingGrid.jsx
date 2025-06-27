@@ -6,18 +6,19 @@ export default function ListingGrid({
   savedIds = [],
   viewedIds = [],
   onSave,
-  onUnsave,           
+  onUnsave,
   onView,
   onGroupSave,
   // --- new voting props ---
   votesByListing = {},
-  onVote = () => {},
+  onVote = () => { },
   nameMap = {},
   currentUserId,
   isGroupGrid = false,
 }) {
+
   return (
-    <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+    <div className="mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
       {listings.map((listing) => (
         <ListingCard
           key={listing.id}
