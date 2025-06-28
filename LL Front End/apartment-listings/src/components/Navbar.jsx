@@ -211,7 +211,7 @@ export default function Navbar() {
                       </button>
                       {dropdownOpen && (
                         <div className="absolute left-0 top-14 w-full bg-gray-800/95 backdrop-blur-sm border border-green-500/30 shadow-lg flex flex-col z-10 rounded-md">
-                          <Link
+                          {/* <Link
                             to="/profile"
                             className="px-4 py-2 text-sm text-gray-300 hover:bg-green-500/20 hover:text-green-400 transition-colors duration-200"
                             onClick={() => setMenuOpen(false)}
@@ -224,7 +224,7 @@ export default function Navbar() {
                             onClick={() => setMenuOpen(false)}
                           >
                             Settings
-                          </Link>
+                          </Link> */}
                           <button
                             onClick={() => {
                               setMenuOpen(false);
