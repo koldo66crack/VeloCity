@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
+import CustomButton from "../components/CustomButton";
+import { useSmartNavigation } from "../utils/navigationUtils";
 
 // Import images
 import whyBubble from "../assets/svg/why-bubble.svg";
@@ -55,26 +57,6 @@ const ScrollSection = ({ children }) => {
     >
       <div className="max-w-5xl mx-auto px-6 md:px-8">{children}</div>
     </section>
-  );
-};
-
-// Custom Button with the unique border effect
-const CustomButton = ({ onClick, children }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="relative group px-8 py-3 text-lg font-semibold text-gray-100 bg-gray-800 rounded-lg overflow-hidden transition-transform duration-200 active:scale-95 touch-manipulation"
-    >
-      <span className="relative z-10 transition-colors duration-300 group-hover:text-white group-active:text-white">
-        {children}
-      </span>
-      {/* Top-left border */}
-      <span className="absolute top-0 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 ease-out group-hover:w-1/2 group-active:w-1/2"></span>
-      <span className="absolute top-0 left-0 w-0.5 h-0 bg-green-400 transition-all duration-300 ease-out group-hover:h-1/2 group-active:h-1/2"></span>
-      {/* Bottom-right border */}
-      <span className="absolute bottom-0 right-0 w-0 h-0.5 bg-green-400 transition-all duration-300 ease-out group-hover:w-1/2 group-active:w-1/2"></span>
-      <span className="absolute bottom-0 right-0 w-0.5 h-0 bg-green-400 transition-all duration-300 ease-out group-hover:h-1/2 group-active:h-1/2"></span>
-    </button>
   );
 };
 
@@ -258,10 +240,10 @@ const SwipeableTimeline = ({ children }) => {
 // Main Landing Page Component
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { navigateToHome } = useSmartNavigation();
   const [typedText, setTypedText] = useState("");
 
-  const TYPEWRITER_TEXT =
-    "What if I told you you're competing for the wrong apartments?";
+  const TYPEWRITER_TEXT = "What if I told you you're competing for the wrong apartments?";
 
   useEffect(() => {
     let currentChar = 0;
@@ -305,7 +287,7 @@ export default function LandingPage() {
           best listings before anyone else.
         </p>
         <div className="mt-12">
-          <CustomButton onClick={() => navigate("/home")}>
+          <CustomButton onClick={() => navigateToHome(navigate)} size="large">
             Start Your Search
           </CustomButton>
         </div>
@@ -421,7 +403,7 @@ export default function LandingPage() {
             Your dream apartment is out there. You just need to know where to look. Get started with VeloCity today.
           </p>
           <div className="mt-8">
-            <CustomButton onClick={() => navigate("/home")}>
+            <CustomButton onClick={() => navigateToHome(navigate)} size="large">
               Find My Apartment
             </CustomButton>
           </div>

@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { useSmartNavigation } from "../../utils/navigationUtils";
+import CustomButton from "../CustomButton";
 
 export default function GuidePlatforms() {
   const navigate = useNavigate();
+  const { navigateToHome } = useSmartNavigation();
 
   return (
     <section>
@@ -9,13 +12,14 @@ export default function GuidePlatforms() {
       <p className="text-black text-lg mb-2">
         There are 350+ platforms for NYC rentals. VeloCity brings them all together in one place—each listing scored for you!
       </p>
-      <button
-        className="bg-[#34495e] text-white px-6 py-2 font-bold uppercase mt-2"
+      <CustomButton
+        onClick={() => navigateToHome(navigate)}
+        size="small"
+        className="mt-2"
         style={{ borderRadius: 0 }}
-        onClick={() => navigate('/home')}
       >
         See All Listings
-      </button>
+      </CustomButton>
     </section>
   );
 }

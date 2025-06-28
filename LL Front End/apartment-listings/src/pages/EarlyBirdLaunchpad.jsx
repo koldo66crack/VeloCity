@@ -1,6 +1,8 @@
 // src/pages/EarlyBirdLaunchpad.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartNavigation } from "../utils/navigationUtils";
+import CustomButton from "../components/CustomButton";
 
 const stepsData = [
   {
@@ -85,6 +87,7 @@ const stepsData = [
 
 export default function EarlyBirdLaunchpad() {
   const navigate = useNavigate();
+  const { navigateToHome } = useSmartNavigation();
   const [stepState, setStepState] = useState({});
   const progress =
     (stepsData.filter(step => step.isComplete(stepState)).length / stepsData.length) * 100;
@@ -118,14 +121,15 @@ export default function EarlyBirdLaunchpad() {
               {step.render({ stepState, setStepState })}
             </div>
           ))}
-          <button
+          <CustomButton
             disabled={progress < 100}
-            onClick={() => navigate("/home")}
-            className={`w-full py-4 bg-[#34495e] text-white font-bold uppercase tracking-wide ${progress < 100 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#232f3e] cursor-pointer'}`}
+            onClick={() => navigateToHome(navigate)}
+            size="large"
+            className={`w-full ${progress < 100 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700 cursor-pointer'}`}
             style={{ borderRadius: 0, letterSpacing: '0.09em' }}
           >
             {progress < 100 ? "Complete all steps to proceed" : "Search Rentals Now"}
-          </button>
+          </CustomButton>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
 import Supercluster from "supercluster";
 import { listingsToGeojson } from "../utils/listingsToGeojson";
 import { Link } from "react-router-dom";
+import GemSpinner from "./GemSpinner";
 
 const COLUMBIA_UNIVERSITY_COORDS = { lat: 40.807384, lng: -73.963036 };
 const containerStyle = { width: "100%", height: "100%" };
@@ -73,7 +74,11 @@ export default function MapViewGoogle({
   };
 
   if (!isLoaded)
-    return <div className="p-4 text-gray-200">🗺️ Loading map…</div>;
+    return (
+      <div className="flex items-center justify-center h-full w-full bg-gray-900/80">
+        <GemSpinner message="Loading your map..." size="large" variant="map" />
+      </div>
+    );
   if (!listings.length)
     return (
       <div className="h-full w-full overflow-hidden bg-gray-100 flex items-center justify-center">

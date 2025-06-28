@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AuthModal from "./components/AuthModal";
+import LoadingOverlay from "./components/LoadingOverlay";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import PublicHome from "./pages/PublicHome";
@@ -89,6 +90,7 @@ export default function App() {
       </Routes>
 
       <AuthModal />
+      <LoadingOverlay />
     </>
   );
 }
