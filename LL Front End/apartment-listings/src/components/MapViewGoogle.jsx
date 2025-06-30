@@ -358,7 +358,7 @@ export default function MapViewGoogle({
               </div>
             </div>
           ))}
-          <button
+          {/* <button
             onClick={() => setActiveBuilding(null)}
             style={{
               alignSelf: 'flex-end',
@@ -373,7 +373,7 @@ export default function MapViewGoogle({
             title="Close"
           >
             ×
-          </button>
+          </button> */}
         </div>
       )}
     </GoogleMap>
