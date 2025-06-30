@@ -1,6 +1,6 @@
 // src/pages/MemberHome.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useUI } from "../store/useUI";
 import FilterPanel from "../components/FilterPanel";
@@ -58,16 +58,22 @@ export default function MemberHome() {
   // *** NEW: Mobile view toggle ***
   const [mobileView, setMobileView] = useState("list"); // "list" or "map"
 
+  // Ref to track if filters have been initialized
+  const filtersInitialized = useRef(false);
+  // Ref to track if we're loading user preferences
+  const loadingPreferences = useRef(false);
+
   const [listings, allAreas, allMarketplaces] = useFilteredListings(filters);
 
   // 1. Initialize filters (including ONLY HIDDEN GEMS) **once** on mount
   useEffect(() => {
     if (
-      !filters &&
+      !filtersInitialized.current &&
       allMarketplaces &&
       allMarketplaces.length > 0 &&
       listings.length > 0
     ) {
+      console.log('Initializing filters...');
       const params = getQueryParams();
       const onlyHiddenGems = params.get("onlyHiddenGems");
       let initFilters = getDefaultFilters(listings);
@@ -79,78 +85,127 @@ export default function MemberHome() {
             mp.toLowerCase() !== "zillow"
         );
         initFilters = { ...initFilters, marketplaces: HIDDEN_GEM_MARKETS };
+        console.log('Hidden gems mode enabled');
       }
       setFilters(initFilters);
       setOrigFilters(initFilters);
+      filtersInitialized.current = true;
+      console.log('Filters initialized successfully');
     }
-  }, [filters, allMarketplaces, listings, window.location.hash]);
+  }, [allMarketplaces, listings]);
+
+  // Handle URL hash changes for onlyHiddenGems parameter
+  useEffect(() => {
+    if (!filtersInitialized.current || !filters || !allMarketplaces) return;
+    
+    const params = getQueryParams();
+    const onlyHiddenGems = params.get("onlyHiddenGems");
+    
+    if (onlyHiddenGems) {
+      const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
+        (mp) =>
+          mp.toLowerCase() !== "streeteasy" &&
+          mp.toLowerCase() !== "zillow"
+      );
+      
+      // Only update if marketplaces are different
+      if (JSON.stringify(filters.marketplaces) !== JSON.stringify(HIDDEN_GEM_MARKETS)) {
+        console.log('Updating filters for hidden gems mode');
+        setFilters(prev => ({ ...prev, marketplaces: HIDDEN_GEM_MARKETS }));
+        setOrigFilters(prev => ({ ...prev, marketplaces: HIDDEN_GEM_MARKETS }));
+      }
+    } else {
+      // If onlyHiddenGems is not in URL, restore all marketplaces
+      const allMarketplacesArray = allMarketplaces;
+      if (JSON.stringify(filters.marketplaces) !== JSON.stringify(allMarketplacesArray)) {
+        console.log('Restoring all marketplaces');
+        setFilters(prev => ({ ...prev, marketplaces: allMarketplacesArray }));
+        setOrigFilters(prev => ({ ...prev, marketplaces: allMarketplacesArray }));
+      }
+    }
+  }, [window.location.hash, allMarketplaces]);
 
   // 2. Load user/group data AFTER filters are set, and **only overwrite with preferences if not hidden gems**
   useEffect(() => {
-    if (!uid || !filters) return;
+    if (!uid || !filters || loadingPreferences.current) return;
+    
+    loadingPreferences.current = true;
+    let isMounted = true;
+    
     (async () => {
-      // Preferences
-      const prefRes = await fetch(`${BASE_URL}/api/preferences/${uid}`);
-      if (prefRes.ok) {
-        const data = await prefRes.json();
-        if (data) {
-          // If current filters are "onlyHiddenGems", preserve marketplaces!
-          const params = getQueryParams();
-          const onlyHiddenGems = params.get("onlyHiddenGems");
-          let loaded = {
-            minPrice: data.minBudget ?? filters.minPrice,
-            maxPrice: data.maxBudget ?? filters.maxPrice,
-            bedrooms:
-              data.bedrooms != null ? String(data.bedrooms) : filters.bedrooms,
-            bathrooms:
-              data.bathrooms != null
-                ? String(data.bathrooms)
-                : filters.bathrooms,
-            lionScores: data.lionScores ?? filters.lionScores,
-            marketplaces:
-              onlyHiddenGems && filters.marketplaces.length
-                ? filters.marketplaces // preserve hidden gems selection!
-                : data.marketplaces ?? filters.marketplaces,
-            maxComplaints: data.maxComplaints ?? filters.maxComplaints,
-            onlyNoFee: data.onlyNoFee ?? filters.onlyNoFee,
-            onlyFeatured: data.onlyFeatured ?? filters.onlyFeatured,
-            areas: data.areas ?? filters.areas,
-            sortOption: data.sortOption ?? filters.sortOption,
-          };
-          setFilters(loaded);
-          setOrigFilters(loaded);
-        }
-      }
-      setPrefLoaded(true);
-
-      // Personal saved listings
-      const savedRes = await fetch(`${BASE_URL}/api/saved/${uid}`);
-      if (savedRes.ok) {
-        const rows = await savedRes.json();
-        setSavedIds(rows.map((r) => String(r.listingId)));
-      }
-
-      // Viewed listings
-      const viewedRes = await fetch(`${BASE_URL}/api/viewed/${uid}`);
-      if (viewedRes.ok) {
-        const rows = await viewedRes.json();
-        setViewedIds(rows.map((r) => String(r.listingId)));
-      }
-
-      // Group membership and group-saved
-      const grpRes = await fetch(`${BASE_URL}/api/group/my?userId=${uid}`);
-      if (grpRes.ok) {
-        const { group: grp } = await grpRes.json();
-        setGroup(grp);
-        if (grp) {
-          const gsRes = await fetch(`${BASE_URL}/api/group/saved/${grp.id}`);
-          if (gsRes.ok) {
-            const rows = await gsRes.json();
-            setGroupSavedIds(rows.map((r) => String(r.listingId)));
+      try {
+        // Preferences
+        const prefRes = await fetch(`${BASE_URL}/api/preferences/${uid}`);
+        if (prefRes.ok && isMounted) {
+          const data = await prefRes.json();
+          if (data) {
+            // If current filters are "onlyHiddenGems", preserve marketplaces!
+            const params = getQueryParams();
+            const onlyHiddenGems = params.get("onlyHiddenGems");
+            let loaded = {
+              minPrice: data.minBudget ?? filters.minPrice,
+              maxPrice: data.maxBudget ?? filters.maxPrice,
+              bedrooms:
+                data.bedrooms != null ? String(data.bedrooms) : filters.bedrooms,
+              bathrooms:
+                data.bathrooms != null
+                  ? String(data.bathrooms)
+                  : filters.bathrooms,
+              lionScores: data.lionScores ?? filters.lionScores,
+              marketplaces:
+                onlyHiddenGems && filters.marketplaces.length
+                  ? filters.marketplaces // preserve hidden gems selection!
+                  : data.marketplaces ?? filters.marketplaces,
+              maxComplaints: data.maxComplaints ?? filters.maxComplaints,
+              onlyNoFee: data.onlyNoFee ?? filters.onlyNoFee,
+              onlyFeatured: data.onlyFeatured ?? filters.onlyFeatured,
+              areas: data.areas ?? filters.areas,
+              sortOption: data.sortOption ?? filters.sortOption,
+            };
+            setFilters(loaded);
+            setOrigFilters(loaded);
           }
         }
+        if (isMounted) setPrefLoaded(true);
+
+        // Personal saved listings
+        const savedRes = await fetch(`${BASE_URL}/api/saved/${uid}`);
+        if (savedRes.ok && isMounted) {
+          const rows = await savedRes.json();
+          setSavedIds(rows.map((r) => String(r.listingId)));
+        }
+
+        // Viewed listings
+        const viewedRes = await fetch(`${BASE_URL}/api/viewed/${uid}`);
+        if (viewedRes.ok && isMounted) {
+          const rows = await viewedRes.json();
+          setViewedIds(rows.map((r) => String(r.listingId)));
+        }
+
+        // Group membership and group-saved
+        const grpRes = await fetch(`${BASE_URL}/api/group/my?userId=${uid}`);
+        if (grpRes.ok && isMounted) {
+          const { group: grp } = await grpRes.json();
+          setGroup(grp);
+          if (grp) {
+            const gsRes = await fetch(`${BASE_URL}/api/group/saved/${grp.id}`);
+            if (gsRes.ok && isMounted) {
+              const rows = await gsRes.json();
+              setGroupSavedIds(rows.map((r) => String(r.listingId)));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        if (isMounted) setPrefLoaded(true);
+      } finally {
+        if (isMounted) loadingPreferences.current = false;
       }
     })();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [uid, filters]);
 
   // Save preferences if changed
