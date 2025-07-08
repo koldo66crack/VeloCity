@@ -11,7 +11,7 @@ export default function LocationFilter({
   const content = (
     <div className="w-80 max-w-full">
       <p className="font-semibold text-gray-200 mb-3 text-sm">Areas</p>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-2 gap-2 text-xs max-h-64 overflow-y-auto pr-2 border-b border-gray-700">
         {allAreas.map((area) => (
           <label key={area} className="flex items-center gap-2 cursor-pointer text-gray-300 hover:text-white">
             <input
@@ -29,28 +29,25 @@ export default function LocationFilter({
           </label>
         ))}
       </div>
-      {!mobile && (
-        <div className="flex justify-between text-xs mt-4">
+      <div className="flex justify-between text-xs mt-4 bg-gray-800 pt-2 sticky bottom-0 z-10">
+        <button
+          className="text-gray-400 hover:text-white hover:underline cursor-pointer"
+          onClick={() => setTempAreas([])}
+        >
+          Reset
+        </button>
+        {setFilters && setOpenDropdown && (
           <button
-            className="text-gray-400 hover:text-white hover:underline cursor-pointer"
-            onClick={() => setTempAreas([])}
+            className="bg-green-600 text-white px-4 py-1.5 rounded cursor-pointer hover:bg-green-700 transition-colors"
+            onClick={() => {
+              if (setFilters) setFilters((prev) => ({ ...prev, areas: tempAreas }));
+              if (setOpenDropdown) setOpenDropdown(null);
+            }}
           >
-            Reset
+            Done
           </button>
-          {/* Only show "Done" if setFilters and setOpenDropdown are provided (i.e., desktop dropdown) */}
-          {setFilters && setOpenDropdown && (
-            <button
-              className="bg-green-600 text-white px-4 py-1.5 rounded cursor-pointer hover:bg-green-700 transition-colors"
-              onClick={() => {
-                if (setFilters) setFilters((prev) => ({ ...prev, areas: tempAreas }));
-                if (setOpenDropdown) setOpenDropdown(null);
-              }}
-            >
-              Done
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 

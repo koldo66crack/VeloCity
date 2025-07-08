@@ -73,7 +73,7 @@ export default function MemberHome() {
       allMarketplaces.length > 0 &&
       listings.length > 0
     ) {
-      console.log('Initializing filters...');
+      console.log("Initializing filters...");
       const params = getQueryParams();
       const onlyHiddenGems = params.get("onlyHiddenGems");
       let initFilters = getDefaultFilters(listings);
@@ -81,46 +81,56 @@ export default function MemberHome() {
       if (onlyHiddenGems) {
         const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
           (mp) =>
-            mp.toLowerCase() !== "streeteasy" &&
-            mp.toLowerCase() !== "zillow"
+            mp.toLowerCase() !== "streeteasy" && mp.toLowerCase() !== "zillow"
         );
         initFilters = { ...initFilters, marketplaces: HIDDEN_GEM_MARKETS };
-        console.log('Hidden gems mode enabled');
+        console.log("Hidden gems mode enabled");
       }
       setFilters(initFilters);
       setOrigFilters(initFilters);
       filtersInitialized.current = true;
-      console.log('Filters initialized successfully');
+      console.log("Filters initialized successfully");
     }
   }, [allMarketplaces, listings]);
 
   // Handle URL hash changes for onlyHiddenGems parameter
   useEffect(() => {
     if (!filtersInitialized.current || !filters || !allMarketplaces) return;
-    
+
     const params = getQueryParams();
     const onlyHiddenGems = params.get("onlyHiddenGems");
-    
+
     if (onlyHiddenGems) {
       const HIDDEN_GEM_MARKETS = allMarketplaces.filter(
         (mp) =>
-          mp.toLowerCase() !== "streeteasy" &&
-          mp.toLowerCase() !== "zillow"
+          mp.toLowerCase() !== "streeteasy" && mp.toLowerCase() !== "zillow"
       );
-      
+
       // Only update if marketplaces are different
-      if (JSON.stringify(filters.marketplaces) !== JSON.stringify(HIDDEN_GEM_MARKETS)) {
-        console.log('Updating filters for hidden gems mode');
-        setFilters(prev => ({ ...prev, marketplaces: HIDDEN_GEM_MARKETS }));
-        setOrigFilters(prev => ({ ...prev, marketplaces: HIDDEN_GEM_MARKETS }));
+      if (
+        JSON.stringify(filters.marketplaces) !==
+        JSON.stringify(HIDDEN_GEM_MARKETS)
+      ) {
+        console.log("Updating filters for hidden gems mode");
+        setFilters((prev) => ({ ...prev, marketplaces: HIDDEN_GEM_MARKETS }));
+        setOrigFilters((prev) => ({
+          ...prev,
+          marketplaces: HIDDEN_GEM_MARKETS,
+        }));
       }
     } else {
       // If onlyHiddenGems is not in URL, restore all marketplaces
       const allMarketplacesArray = allMarketplaces;
-      if (JSON.stringify(filters.marketplaces) !== JSON.stringify(allMarketplacesArray)) {
-        console.log('Restoring all marketplaces');
-        setFilters(prev => ({ ...prev, marketplaces: allMarketplacesArray }));
-        setOrigFilters(prev => ({ ...prev, marketplaces: allMarketplacesArray }));
+      if (
+        JSON.stringify(filters.marketplaces) !==
+        JSON.stringify(allMarketplacesArray)
+      ) {
+        console.log("Restoring all marketplaces");
+        setFilters((prev) => ({ ...prev, marketplaces: allMarketplacesArray }));
+        setOrigFilters((prev) => ({
+          ...prev,
+          marketplaces: allMarketplacesArray,
+        }));
       }
     }
   }, [window.location.hash, allMarketplaces]);
@@ -128,10 +138,10 @@ export default function MemberHome() {
   // 2. Load user/group data AFTER filters are set, and **only overwrite with preferences if not hidden gems**
   useEffect(() => {
     if (!uid || !filters || loadingPreferences.current) return;
-    
+
     loadingPreferences.current = true;
     let isMounted = true;
-    
+
     (async () => {
       try {
         // Preferences
@@ -146,7 +156,9 @@ export default function MemberHome() {
               minPrice: data.minBudget ?? filters.minPrice,
               maxPrice: data.maxBudget ?? filters.maxPrice,
               bedrooms:
-                data.bedrooms != null ? String(data.bedrooms) : filters.bedrooms,
+                data.bedrooms != null
+                  ? String(data.bedrooms)
+                  : filters.bedrooms,
               bathrooms:
                 data.bathrooms != null
                   ? String(data.bathrooms)
@@ -196,13 +208,13 @@ export default function MemberHome() {
           }
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error("Error loading user data:", error);
         if (isMounted) setPrefLoaded(true);
       } finally {
         if (isMounted) loadingPreferences.current = false;
       }
     })();
-    
+
     return () => {
       isMounted = false;
     };
@@ -313,34 +325,34 @@ export default function MemberHome() {
         allMarketplaces={allMarketplaces}
       />
 
-      {/* Mobile: Toggle buttons */}
-      <div className="md:hidden flex justify-between mb-2">
-        <button
-          className={`flex-1 py-2 font-semibold border-b-2 ${
-            mobileView === "list"
-              ? "border-[#34495e] text-[#34495e]"
-              : "border-transparent text-gray-400"
-          }`}
-          onClick={() => setMobileView("list")}
-        >
-          Listings
-        </button>
-        <button
-          className={`flex-1 py-2 font-semibold border-b-2 ${
-            mobileView === "map"
-              ? "border-[#34495e] text-[#34495e]"
-              : "border-transparent text-gray-400"
-          }`}
-          onClick={() => setMobileView("map")}
-        >
-          Map
-        </button>
-      </div>
-
       <div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]"
         style={{ height: "calc(100vh - 128px)" }}
       >
+        {/* Mobile: Toggle buttons */}
+        <div className="md:hidden flex justify-between mb-2">
+          <button
+            className={`flex-1 py-2 font-semibold border-b-2 ${
+              mobileView === "list"
+                ? "border-[#34495e] text-[#34495e]"
+                : "border-transparent text-gray-400"
+            }`}
+            onClick={() => setMobileView("list")}
+          >
+            Listings
+          </button>
+          <button
+            className={`flex-1 py-2 font-semibold border-b-2 ${
+              mobileView === "map"
+                ? "border-[#34495e] text-[#34495e]"
+                : "border-transparent text-gray-400"
+            }`}
+            onClick={() => setMobileView("map")}
+          >
+            Map
+          </button>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6 h-full">
           {/* Listings: only show on desktop or if mobileView==="list" */}
           <div
