@@ -5,11 +5,13 @@ import { useParams } from "react-router-dom";
 import { useUI } from "../store/useUI";
 import FilterPanel from "../components/FilterPanel";
 import ListingGrid from "../components/ListingGrid";
+import ListingCountDisplay from "../components/ListingCountDisplay";
 import MapView from "../components/MapViewGoogle";
 import {
   useFilteredListings,
   getDefaultFilters,
 } from "../hooks/useFilteredListings";
+import { usePagination } from "../hooks/usePagination";
 
 // Helper: Checks if a listing's coordinates are inside map bounds
 function isListingInBounds(listing, bounds) {
@@ -220,35 +222,6 @@ export default function MemberHome() {
     };
   }, [uid, filters]);
 
-  // Save preferences if changed
-  // useEffect(() => {
-  //   if (!prefLoaded || !filters || !origFilters) return;
-  //   if (JSON.stringify(filters) !== JSON.stringify(origFilters)) {
-  //     if (window.confirm("Save new preferences?")) {
-  //       const payload = {
-  //         userId: uid,
-  //         minBudget: filters.minPrice,
-  //         maxBudget: filters.maxPrice,
-  //         bedrooms: filters.bedrooms === "any" ? null : Number(filters.bedrooms),
-  //         bathrooms: filters.bathrooms === "any" ? null : Number(filters.bathrooms),
-  //         lionScores: filters.lionScores,
-  //         marketplaces: filters.marketplaces,
-  //         areas: filters.areas,
-  //         onlyNoFee: filters.onlyNoFee,
-  //         onlyFeatured: filters.onlyFeatured,
-  //         maxComplaints: filters.maxComplaints,
-  //       };
-  //       fetch(`${BASE_URL}/api/preferences`, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify(payload),
-  //       }).then(() => setOrigFilters(filters));
-  //     } else {
-  //       setFilters(origFilters);
-  //     }
-  //   }
-  // }, [filters, origFilters, prefLoaded, uid]);
-
   // ---- Handlers ----
   const handleSave = (listingId) => {
     if (!uid) return openAuthModal();
@@ -313,6 +286,14 @@ export default function MemberHome() {
     ? listings.filter((l) => isListingInBounds(l, mapBounds))
     : listings;
 
+  // Pagination hook
+  const paginationData = usePagination(visibleListings, false);
+
+  // Reset pagination when filters or map bounds change
+  useEffect(() => {
+    paginationData.resetToFirstPage();
+  }, [filters, mapBounds]);
+
   if (!filters) return null;
 
   return (
@@ -356,19 +337,31 @@ export default function MemberHome() {
         <div className="flex flex-col lg:flex-row gap-6 h-full">
           {/* Listings: only show on desktop or if mobileView==="list" */}
           <div
-            className={`lg:w-1/2 h-full overflow-y-auto pr-2 ${
-              mobileView === "map" ? "hidden md:block" : ""
+            className={`lg:w-1/2 h-full flex flex-col ${
+              mobileView === "map" ? "hidden md:flex" : ""
             }`}
           >
-            <ListingGrid
-              listings={visibleListings}
-              savedIds={combinedSavedIds}
-              viewedIds={viewedIds}
-              onSave={handleSave}
-              onUnsave={handleUnsave}
-              onGroupSave={group ? handleGroupSave : undefined}
-              onView={handleView}
+            {/* Listing Count Display */}
+            <ListingCountDisplay
+              totalItems={paginationData.totalItems}
+              isLoading={paginationData.isPageLoading}
+              filters={filters}
             />
+
+            {/* Listings Grid with Pagination */}
+            <div className="flex-1 overflow-hidden">
+              <ListingGrid
+                listings={paginationData.currentPageListings}
+                savedIds={combinedSavedIds}
+                viewedIds={viewedIds}
+                onSave={handleSave}
+                onUnsave={handleUnsave}
+                onGroupSave={group ? handleGroupSave : undefined}
+                onView={handleView}
+                paginationData={paginationData}
+                isLoading={paginationData.isPageLoading}
+              />
+            </div>
           </div>
           {/* Map: only show on desktop or if mobileView==="map" */}
           <div

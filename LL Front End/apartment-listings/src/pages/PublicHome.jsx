@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { useUI } from "../store/useUI";
 import FilterPanel from "../components/FilterPanel";
 import ListingGrid from "../components/ListingGrid";
+import ListingCountDisplay from "../components/ListingCountDisplay";
 import MapView from "../components/MapViewGoogle";
 import {
   useFilteredListings,
   getDefaultFilters,
 } from "../hooks/useFilteredListings";
+import { usePagination } from "../hooks/usePagination";
 
 // Helper: check if listing is in map bounds
 function isListingInBounds(listing, bounds) {
@@ -84,6 +86,14 @@ export default function PublicHome() {
     ? listings.filter((l) => isListingInBounds(l, mapBounds))
     : listings;
 
+  // Pagination hook
+  const paginationData = usePagination(visibleListings, false);
+
+  // Reset pagination when filters or map bounds change
+  useEffect(() => {
+    paginationData.resetToFirstPage();
+  }, [filters, mapBounds]);
+
   if (!filters) return null;
 
   return (
@@ -127,15 +137,27 @@ export default function PublicHome() {
         <div className="flex flex-col lg:flex-row gap-6 h-full">
           {/* Listings: only show on desktop or if mobileView==="list" */}
           <div
-            className={`lg:w-1/2 h-full overflow-y-auto pr-2 ${
-              mobileView === "map" ? "hidden md:block" : ""
+            className={`lg:w-1/2 h-full flex flex-col ${
+              mobileView === "map" ? "hidden md:flex" : ""
             }`}
           >
-            <ListingGrid
-              listings={visibleListings}
-              savedIds={[]}
-              onSave={handleSave}
+            {/* Listing Count Display */}
+            <ListingCountDisplay
+              totalItems={paginationData.totalItems}
+              isLoading={paginationData.isPageLoading}
+              filters={filters}
             />
+
+            {/* Listings Grid with Pagination */}
+            <div className="flex-1 overflow-hidden">
+              <ListingGrid
+                listings={paginationData.currentPageListings}
+                savedIds={[]}
+                onSave={handleSave}
+                paginationData={paginationData}
+                isLoading={paginationData.isPageLoading}
+              />
+            </div>
           </div>
           {/* Map: only show on desktop or if mobileView==="map" */}
           <div
