@@ -130,7 +130,7 @@ export default function PaginationControls({
       </div>
 
       {/* Mobile Pagination Controls */}
-      <div className="flex md:hidden items-center gap-4 justify-center w-full">
+      <div className="flex md:hidden items-center gap-4 justify-center w-full sticky bottom-0 bg-gray-900 z-30 border-t border-gray-800 px-4">
         <button
           onClick={goToPrevPage}
           disabled={!hasPrevPage || isLoading}

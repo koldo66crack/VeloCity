@@ -24,7 +24,7 @@ export default function ListingGrid({
   return (
     <div className="flex flex-col h-full">
       {/* Listings Grid */}
-      <div className="flex-1 overflow-y-auto pb-24 md:pb-0"> {/* Add bottom padding for sticky controls */}
+      <div className="flex-1 overflow-y-auto pb-4 md:pb-0"> {/* Reduced bottom padding for sticky controls */}
         <div className="mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
           {listings.map((listing) => (
             <ListingCard
