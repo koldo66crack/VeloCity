@@ -196,167 +196,179 @@ export default function ListingCard({
   const [isHovered, setIsHovered] = useState(false);
   const showCarouselControls = images.length > 1 && (isHovered || window.innerWidth < 768);
 
-  return (
-    <div
-      className="relative bg-gray-700 rounded-sm shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[320px]"
-      style={{ minHeight: '320px' }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <SaveChoiceModal
-        open={showSaveModal}
-        onClose={() => setShowSaveModal(false)}
-        onGroup={saveToGroup}
-        onPersonal={saveToPersonal}
-      />
+  // Handler to prevent bubbling for interactive elements
+  const stopPropagation = (e) => e.stopPropagation();
 
-      {/* --- IMAGE CAROUSEL --- */}
-      <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center rounded-t-sm">
-        {/* Listed By label */}
-        <span className="absolute top-2 left-2 bg-black/80 text-white px-3 py-1 rounded-md text-xs z-20">
-          Listed by {displayMarketplaces}
-        </span>
-        {/* Image index (bottom left) */}
-        {images.length > 1 && (
-          <span
-            className={`
+  return (
+    <Link
+      to={`/listing/${listing.id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block cursor-pointer"
+      tabIndex={0}
+      style={{ textDecoration: "none" }}
+    >
+      <div
+        className="relative bg-gray-700 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[340px]"
+        style={{ minHeight: '340px' }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <SaveChoiceModal
+          open={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          onGroup={saveToGroup}
+          onPersonal={saveToPersonal}
+        />
+
+        {/* --- IMAGE CAROUSEL --- */}
+        <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center rounded-t-xl">
+          {/* Listed By label */}
+          <span className="absolute top-2 left-2 bg-black/80 text-white px-3 py-1 rounded-md text-xs z-20">
+            Listed by {displayMarketplaces}
+          </span>
+          {/* Image index (bottom left) */}
+          {images.length > 1 && (
+            <span
+              className={`
               absolute bottom-2 left-2 px-2 py-1 text-xs text-white bg-black/70
               z-20
               ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
               transition-opacity duration-200 rounded-sm
             `}
-          >
-            {currentImage + 1}/{images.length}
-          </span>
-        )}
-        {images.length > 0 ? (
-          <img
-            src={images[currentImage]}
-            alt={listing.title}
-            className="w-full h-full object-cover rounded-t-sm transition-transform duration-300 ease-in-out"
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-gray-500 text-center text-sm italic">
-            Oops, we couldn't get the images for this listing.
-          </div>
-        )}
-        {/* Carousel arrows */}
-        {images.length > 1 && (
-          <>
-            <button
-              className={`
+            >
+              {currentImage + 1}/{images.length}
+            </span>
+          )}
+          {images.length > 0 ? (
+            <img
+              src={images[currentImage]}
+              alt={listing.title}
+              className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 ease-in-out"
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full text-gray-500 text-center text-sm italic">
+              Oops, we couldn't get the images for this listing.
+            </div>
+          )}
+          {/* Carousel arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                className={`
                 absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90
                 rounded-full p-2 shadow flex items-center justify-center z-20
                 transition-opacity duration-200
                 ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
               `}
-              onClick={goPrev}
-              tabIndex={showCarouselControls ? 0 : -1}
-            >
-              <img src={doubleArrowLeft} alt="Previous" className="w-6 h-6" />
-            </button>
-            <button
-              className={`
+                onClick={(e) => { stopPropagation(e); goPrev(e); }}
+                tabIndex={showCarouselControls ? 0 : -1}
+              >
+                <img src={doubleArrowLeft} alt="Previous" className="w-6 h-6" />
+              </button>
+              <button
+                className={`
                 absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90
                 rounded-full p-2 shadow flex items-center justify-center z-20
                 transition-opacity duration-200
                 ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
               `}
-              onClick={goNext}
-              tabIndex={showCarouselControls ? 0 : -1}
+                onClick={(e) => { stopPropagation(e); goNext(e); }}
+                tabIndex={showCarouselControls ? 0 : -1}
+              >
+                <img src={doubleArrowRight} alt="Next" className="w-6 h-6" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* --- CARD CONTENT --- */}
+        <div className="px-4 pt-3 pb-2 rounded-b-xl">
+          {/* Price and Save Icon */}
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-gray-100 text-base">${price.toLocaleString()}</span>
+            <button
+              onClick={(e) => { stopPropagation(e); saved ? handleUnsave(e) : handleSave(e); }}
+              className="p-1 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+              title={saved ? 'Unsave' : 'Save'}
+              style={{ lineHeight: 0 }}
             >
-              <img src={doubleArrowRight} alt="Next" className="w-6 h-6" />
+              <img
+                src={gem}
+                alt="Save"
+                className={`w-5 h-5 transition-all duration-200 ${
+                  saved ? 'filter-none' : 'grayscale opacity-60'
+                }`}
+                style={{ filter: saved ? 'drop-shadow(0 0 6px #22c55e)' : 'grayscale(1) opacity(0.6)' }}
+              />
             </button>
-          </>
+          </div>
+          {/* Details row */}
+          <div className="flex items-center gap-2 text-gray-200 text-sm mb-0.5">
+            {bedDisplay} <span className="mx-1 text-gray-500">|</span>
+            {listing.bathrooms} bath <span className="mx-1 text-gray-500">|</span>
+            {listing.size_sqft ? Number(listing.size_sqft).toFixed(0) : "—"} sqft
+          </div>
+          {/* Address row */}
+          <div className="text-gray-400 text-xs leading-tight">
+            {listing.addr_street}
+            {listing.addr_unit ? `, Unit ${listing.addr_unit}` : ""}
+            <br />
+            {listing.area_name || listing.neighborhood}
+          </div>
+        </div>
+        {/* ---- GROUP VOTING UI ---- */}
+        {isGroupCard && (
+          <div className="flex flex-col items-center py-2 border-t border-gray-800 bg-gray-950">
+            <div className="flex gap-3 items-center mb-1">
+              <button
+                onClick={() => handleVoteClick(1)}
+                className={`px-2 py-1 rounded ${
+                  currentUserVote === 1
+                    ? "bg-green-600 text-gray-200"
+                    : "bg-gray-800 hover:bg-green-900 text-green-400"
+                }`}
+              >
+                👍 {upvoters.length}
+              </button>
+              <button
+                onClick={() => handleVoteClick(-1)}
+                className={`px-2 py-1 rounded ${
+                  currentUserVote === -1
+                    ? "bg-red-600 text-gray-200"
+                    : "bg-gray-800 hover:bg-red-900 text-red-400"
+                }`}
+              >
+                👎 {downvoters.length}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-gray-400">
+              {upvoters.length > 0 && (
+                <span>
+                  <span className="font-bold text-green-400">+ Voted:</span>{" "}
+                  {upvoters.map((v, i) => (
+                    <span key={v.userId}>
+                      {nameMap[v.userId] || v.user?.fullName || v.userId}
+                      {i < upvoters.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </span>
+              )}
+              {downvoters.length > 0 && (
+                <span>
+                  <span className="font-bold text-red-400">– Voted:</span>{" "}
+                  {downvoters.map((v, i) => (
+                    <span key={v.userId}>
+                      {nameMap[v.userId] || v.user?.fullName || v.userId}
+                      {i < downvoters.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </span>
+              )}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* --- CARD CONTENT --- */}
-      <div className="px-4 pt-3 pb-2 rounded-b-sm">
-        {/* Price and Save Icon */}
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-gray-100 text-base">${price.toLocaleString()}</span>
-          <button
-            onClick={saved ? handleUnsave : handleSave}
-            className="p-1 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
-            title={saved ? 'Unsave' : 'Save'}
-            style={{ lineHeight: 0 }}
-          >
-            <img
-              src={gem}
-              alt="Save"
-              className={`w-5 h-5 transition-all duration-200 ${
-                saved ? 'filter-none' : 'grayscale opacity-60'
-              }`}
-              style={{ filter: saved ? 'drop-shadow(0 0 6px #22c55e)' : 'grayscale(1) opacity(0.6)' }}
-            />
-          </button>
-        </div>
-        {/* Details row */}
-        <div className="flex items-center gap-2 text-gray-200 text-sm mb-0.5">
-          {bedDisplay} <span className="mx-1 text-gray-500">|</span>
-          {listing.bathrooms} bath <span className="mx-1 text-gray-500">|</span>
-          {listing.size_sqft ? Number(listing.size_sqft).toFixed(0) : "—"} sqft
-        </div>
-        {/* Address row */}
-        <div className="text-gray-400 text-xs leading-tight">
-          {listing.addr_street}
-          {listing.addr_unit ? `, Unit ${listing.addr_unit}` : ""}
-          <br />
-          {listing.area_name || listing.neighborhood}
-        </div>
-      </div>
-      {/* ---- GROUP VOTING UI ---- */}
-      {isGroupCard && (
-        <div className="flex flex-col items-center py-2 border-t border-gray-800 bg-gray-950">
-          <div className="flex gap-3 items-center mb-1">
-            <button
-              onClick={() => handleVoteClick(1)}
-              className={`px-2 py-1 rounded ${
-                currentUserVote === 1
-                  ? "bg-green-600 text-gray-200"
-                  : "bg-gray-800 hover:bg-green-900 text-green-400"
-              }`}
-            >
-              👍 {upvoters.length}
-            </button>
-            <button
-              onClick={() => handleVoteClick(-1)}
-              className={`px-2 py-1 rounded ${
-                currentUserVote === -1
-                  ? "bg-red-600 text-gray-200"
-                  : "bg-gray-800 hover:bg-red-900 text-red-400"
-              }`}
-            >
-              👎 {downvoters.length}
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs text-gray-400">
-            {upvoters.length > 0 && (
-              <span>
-                <span className="font-bold text-green-400">+ Voted:</span>{" "}
-                {upvoters.map((v, i) => (
-                  <span key={v.userId}>
-                    {nameMap[v.userId] || v.user?.fullName || v.userId}
-                    {i < upvoters.length - 1 ? ", " : ""}
-                  </span>
-                ))}
-              </span>
-            )}
-            {downvoters.length > 0 && (
-              <span>
-                <span className="font-bold text-red-400">– Voted:</span>{" "}
-                {downvoters.map((v, i) => (
-                  <span key={v.userId}>
-                    {nameMap[v.userId] || v.user?.fullName || v.userId}
-                    {i < downvoters.length - 1 ? ", " : ""}
-                  </span>
-                ))}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    </Link>
   );
 }
