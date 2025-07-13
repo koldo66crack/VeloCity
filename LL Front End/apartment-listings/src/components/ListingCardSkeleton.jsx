@@ -3,7 +3,7 @@ import gem from '../assets/svg/gem-stone-svgrepo-com.svg';
 
 const ListingCardSkeleton = () => {
   return (
-    <div className="relative bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[340px] animate-pulse">
+    <div className="relative bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto animate-pulse">
       {/* Image Skeleton */}
       <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center">
         <div className="flex items-center justify-center w-full h-full">

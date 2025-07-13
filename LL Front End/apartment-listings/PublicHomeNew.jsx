@@ -97,7 +97,7 @@ export default function PublicHome() {
       />
 
       <div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]"
+        className="mx-auto pt-[50px] px-2"
         style={{ height: "calc(100vh - 128px)" }}
       >
         {/* Mobile: Toggle buttons */}

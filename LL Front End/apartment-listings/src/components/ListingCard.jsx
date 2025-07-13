@@ -19,7 +19,7 @@ function SaveChoiceModal({ open, onClose, onGroup, onPersonal }) {
   if (!open) return null;
   return (
     <div className="m-2 fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-gray-900 p-6 shadow-2xl w-[340px] rounded-lg border border-gray-700">
+      <div className="bg-gray-900 p-6 shadow-2xl w-[320px] rounded-lg border border-gray-700">
         <h3 className="text-lg font-bold mb-2 text-gray-200">Save Listing</h3>
         <p className="mb-6 text-gray-300">
           Where do you want to save this listing?
@@ -209,8 +209,7 @@ export default function ListingCard({
       style={{ textDecoration: "none" }}
     >
       <div
-        className="relative bg-gray-700 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[340px]"
-        style={{ minHeight: '340px' }}
+        className="relative bg-gray-700 rounded-sm shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -222,7 +221,7 @@ export default function ListingCard({
         />
 
         {/* --- IMAGE CAROUSEL --- */}
-        <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center rounded-t-xl">
+        <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center rounded-t-sm">
           {/* Listed By label */}
           <span className="absolute top-2 left-2 bg-black/80 text-white px-3 py-1 rounded-md text-xs z-20">
             Listed by {displayMarketplaces}
@@ -244,7 +243,7 @@ export default function ListingCard({
             <img
               src={images[currentImage]}
               alt={listing.title}
-              className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 ease-in-out"
+              className="w-full h-full object-cover rounded-t-sm transition-transform duration-300 ease-in-out"
             />
           ) : (
             <div className="flex items-center justify-center w-full h-full text-gray-500 text-center text-sm italic">

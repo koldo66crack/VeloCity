@@ -200,6 +200,8 @@ export default function ListingDetailPage() {
   };
 
   const saveToPersonal = async () => {
+    setShowSaveModal(false); // Add this line to close the modal
+    setSaved(true);
     try {
       const res = await fetch(`${BASE_URL}/api/saved`, {
         method: "POST",
@@ -210,8 +212,8 @@ export default function ListingDetailPage() {
         throw new Error("Failed to save personally");
       }
     } catch (err) {
+      setSaved(false); // Reset if save fails
       console.error("Error saving personally:", err);
-      throw err;
     }
   };
 

@@ -83,7 +83,7 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-10 bg-gray-900 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[50px]">
+      <div className="mx-auto pt-[50px] px-2">
         <h1 className="text-3xl font-bold mb-6 text-gray-200">My Dashboard</h1>
 
         {/* Tab Navigation */}
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+        <div className="bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden p-2">
           {tab === "saved" && (
             <SavedListingsTab
               savedIds={savedIds}

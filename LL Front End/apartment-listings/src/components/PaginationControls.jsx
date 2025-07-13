@@ -59,7 +59,7 @@ export default function PaginationControls({
   const pageNumbers = getSmartPageNumbers(currentPage, totalPages);
 
   return (
-    <div className="flex flex-col items-center gap-4 py-2 border-t border-gray-800 mb-8 md:mb-0">
+    <div className="flex flex-col items-center gap-4 py-2">
       {/* Results count */}
       <div className="text-sm text-gray-400">
         Showing {startIndex}-{endIndex} of {totalItems.toLocaleString()} listings
@@ -130,7 +130,7 @@ export default function PaginationControls({
       </div>
 
       {/* Mobile Pagination Controls */}
-      <div className="flex md:hidden items-center gap-4 justify-center w-full sticky bottom-0 bg-gray-900 z-30 border-t border-gray-800 px-4">
+      <div className="flex md:hidden items-center gap-4 justify-center">
         <button
           onClick={goToPrevPage}
           disabled={!hasPrevPage || isLoading}

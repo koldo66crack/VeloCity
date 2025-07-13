@@ -49,8 +49,8 @@ export default function ListingGrid({
 
       {/* Sticky Pagination Controls on mobile, static on desktop */}
       {paginationData && (
-        <div className="w-full md:static md:bg-transparent sticky bottom-0 bg-gray-900 z-20 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full md:static md:bg-transparent sticky bottom-0 bg-gray-900 z-20 md:pb-0 pb-8">
+          <div className="mx-auto">
             <PaginationControls
               currentPage={paginationData.currentPage}
               totalPages={paginationData.totalPages}
