@@ -10,6 +10,8 @@ import bath from "../assets/svg/bath-svgrepo-com.svg";
 import size from "../assets/svg/ruler-angular-svgrepo-com.svg";
 import walking from "../assets/svg/walking-time-svgrepo-com.svg";
 import gem from "../assets/svg/gem-stone-svgrepo-com.svg";
+import doubleArrowLeft from "../assets/svg/double-arrow-left.svg";
+import doubleArrowRight from "../assets/svg/double-arrow-right.svg";
 
 const COLUMBIA_UNIVERSITY_COORDS = { lat: 40.816151, lng: -73.943653 };
 
@@ -190,10 +192,16 @@ export default function ListingCard({
       ? "Studio"
       : `${listing.bedrooms} bed`;
 
+  // Responsive: show carousel controls always on mobile, on hover for desktop
+  const [isHovered, setIsHovered] = useState(false);
+  const showCarouselControls = images.length > 1 && (isHovered || window.innerWidth < 768);
+
   return (
     <div
-      className={`relative bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[340px]`}
-      style={{ minHeight: '340px' }}
+      className="relative bg-gray-700 rounded-sm shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col w-full max-w-xl mx-auto min-h-[320px]"
+      style={{ minHeight: '320px' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <SaveChoiceModal
         open={showSaveModal}
@@ -203,102 +211,101 @@ export default function ListingCard({
       />
 
       {/* --- IMAGE CAROUSEL --- */}
-      <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full h-48 sm:h-56 bg-gray-800 overflow-hidden flex items-center justify-center rounded-t-sm">
+        {/* Listed By label */}
+        <span className="absolute top-2 left-2 bg-black/80 text-white px-3 py-1 rounded-md text-xs z-20">
+          Listed by {displayMarketplaces}
+        </span>
+        {/* Image index (bottom left) */}
+        {images.length > 1 && (
+          <span
+            className={`
+              absolute bottom-2 left-2 px-2 py-1 text-xs text-white bg-black/70
+              z-20
+              ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
+              transition-opacity duration-200 rounded-sm
+            `}
+          >
+            {currentImage + 1}/{images.length}
+          </span>
+        )}
         {images.length > 0 ? (
           <img
             src={images[currentImage]}
             alt={listing.title}
-            className="w-full h-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out"
+            className="w-full h-full object-cover rounded-t-sm transition-transform duration-300 ease-in-out"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-gray-500 text-center text-sm italic">
             Oops, we couldn't get the images for this listing.
           </div>
         )}
+        {/* Carousel arrows */}
         {images.length > 1 && (
           <>
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-900/70 hover:bg-gray-900 rounded-full px-2 py-1 shadow text-gray-200"
+              className={`
+                absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90
+                rounded-full p-2 shadow flex items-center justify-center z-20
+                transition-opacity duration-200
+                ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
+              `}
               onClick={goPrev}
+              tabIndex={showCarouselControls ? 0 : -1}
             >
-              ‹
+              <img src={doubleArrowLeft} alt="Previous" className="w-6 h-6" />
             </button>
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-900/70 hover:bg-gray-900 rounded-full px-2 py-1 shadow text-gray-200"
+              className={`
+                absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90
+                rounded-full p-2 shadow flex items-center justify-center z-20
+                transition-opacity duration-200
+                ${showCarouselControls ? "opacity-100" : "opacity-0 md:opacity-0"}
+              `}
               onClick={goNext}
+              tabIndex={showCarouselControls ? 0 : -1}
             >
-              ›
+              <img src={doubleArrowRight} alt="Next" className="w-6 h-6" />
             </button>
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1">
-              {images.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`inline-block w-2 h-2 rounded-full ${
-                    idx === currentImage ? "bg-green-500" : "bg-gray-600"
-                  }`}
-                />
-              ))}
-            </div>
           </>
         )}
-        {/* Gem Icon for Save/Unsave */}
-        <button
-          onClick={saved ? handleUnsave : handleSave}
-          className="absolute top-3 right-3 p-1 rounded-full bg-gray-800/80 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 z-10"
-          title={saved ? "Unsave" : "Save"}
-          style={{ lineHeight: 0 }}
-        >
-          <img
-            src={gem}
-            alt="Save"
-            className={`w-7 h-7 transition-all duration-200 ${
-              saved ? "filter-none" : "grayscale opacity-60"
-            } ${saved ? "drop-shadow-[0_0_6px_rgba(34,197,94,0.7)]" : ""}`}
-            style={{ filter: saved ? "drop-shadow(0 0 6px #22c55e)" : "grayscale(1) opacity(0.6)" }}
-          />
-        </button>
       </div>
 
-      <Link
-        to={`/listing/${listing.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleView}
-        className="flex-1 flex flex-col justify-between p-5 sm:p-6 gap-2 cursor-pointer"
-        style={{ minHeight: '180px' }}
-      >
-        <div className="flex flex-col gap-1">
-          <h3 className="text-lg font-bold text-gray-200 truncate mb-1 hover:underline transition-all duration-150" title={listing.title}>
-            {listing.title}
-          </h3>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-gray-200">${price}</span>
-            <span className="text-xs text-gray-200 font-medium">Per Bed: ${Number(listing.price_per_bed).toFixed(2)}</span>
-          </div>
+      {/* --- CARD CONTENT --- */}
+      <div className="px-4 pt-3 pb-2 rounded-b-sm">
+        {/* Price and Save Icon */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-gray-100 text-base">${price.toLocaleString()}</span>
+          <button
+            onClick={saved ? handleUnsave : handleSave}
+            className="p-1 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+            title={saved ? 'Unsave' : 'Save'}
+            style={{ lineHeight: 0 }}
+          >
+            <img
+              src={gem}
+              alt="Save"
+              className={`w-5 h-5 transition-all duration-200 ${
+                saved ? 'filter-none' : 'grayscale opacity-60'
+              }`}
+              style={{ filter: saved ? 'drop-shadow(0 0 6px #22c55e)' : 'grayscale(1) opacity(0.6)' }}
+            />
+          </button>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-300 mt-2">
-          <span className="flex items-center gap-1">
-            <img src={bed} className="w-4 h-4" />
-            {bedDisplay}
-          </span>
-          <span className="flex items-center gap-1">
-            <img src={bath} className="w-4 h-4" /> {listing.bathrooms} bath
-          </span>
-          <span className="flex items-center gap-1">
-            <img src={size} className="w-4 h-4" />
-            {listing.size_sqft ? Number(listing.size_sqft).toFixed(2) : "—"} ft²
-          </span>
-          {distance !== null && (
-            <span className="flex items-center gap-1">
-              <img src={walking} className="w-4 h-4" />
-              {distance} mi from Columbia
-            </span>
-          )}
+        {/* Details row */}
+        <div className="flex items-center gap-2 text-gray-200 text-sm mb-0.5">
+          {bedDisplay} <span className="mx-1 text-gray-500">|</span>
+          {listing.bathrooms} bath <span className="mx-1 text-gray-500">|</span>
+          {listing.size_sqft ? Number(listing.size_sqft).toFixed(0) : "—"} sqft
         </div>
-        <div className="text-[11px] text-gray-500 italic mt-2 text-right">
-          Listed by {displayMarketplaces}
+        {/* Address row */}
+        <div className="text-gray-400 text-xs leading-tight">
+          {listing.addr_street}
+          {listing.addr_unit ? `, Unit ${listing.addr_unit}` : ""}
+          <br />
+          {listing.area_name || listing.neighborhood}
         </div>
-      </Link>
+      </div>
       {/* ---- GROUP VOTING UI ---- */}
       {isGroupCard && (
         <div className="flex flex-col items-center py-2 border-t border-gray-800 bg-gray-950">
