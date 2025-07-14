@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import LocationFilter from "./LocationFilter";
 import SortFilter from "./SortFilter";
@@ -228,65 +229,64 @@ export default function FilterPanel({
         </div>
 
         {/* MOBILE FILTER MODAL */}
-        {showMobileModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-end md:hidden">
-            <div className="w-full max-h-[90vh] bg-gray-900 border-t border-gray-700 rounded-t-2xl shadow-lg p-6 overflow-y-auto animate-fadein">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white">Filters</h3>
-                <button
-                  onClick={() => setShowMobileModal(false)}
-                  className="text-gray-400 hover:text-white text-2xl font-bold"
-                  aria-label="Close"
-                >
-                  &times;
-                </button>
+        {showMobileModal &&
+          createPortal(
+            <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-end md:hidden">
+              <div className="w-full max-h-[90vh] bg-gray-900 border-t border-gray-700 rounded-t-2xl shadow-lg p-6 overflow-y-auto animate-fadein relative">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-white">Filters</h3>
+                  <button
+                    onClick={() => setShowMobileModal(false)}
+                    className="text-gray-400 hover:text-white text-2xl font-bold"
+                    aria-label="Close"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="flex flex-col gap-6 pb-28"> {/* Add padding bottom for button space */}
+                  {/* Neighborhood */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-white mb-2">Neighborhood</h4>
+                    <LocationFilter allAreas={allAreas} tempAreas={mobileTempAreas} setTempAreas={setMobileTempAreas} mobile={true}/>
+                  </div>
+                  {/* Sort */}
+                  <div>
+                      <h4 className="text-sm font-semibold text-white mb-2">Sort</h4>
+                      <SortFilter value={tempSortOption} setValue={setTempSortOption} mobile={true} />
+                  </div>
+                  {/* Price */}
+                  <div>
+                      <h4 className="text-sm font-semibold text-white mb-2">Price</h4>
+                      <PriceFilter tempPrice={mobileTempPrice} setTempPrice={setMobileTempPrice} mobile={true} />
+                  </div>
+                  {/* Bed/Bath */}
+                  <div>
+                      <h4 className="text-sm font-semibold text-white mb-2">Beds / Baths</h4>
+                      <BedBathFilter tempBed={mobileTempBed} tempBath={mobileTempBath} setTempBed={setMobileTempBed} setTempBath={setMobileTempBath} mobile={true} />
+                  </div>
+                  {/* StreetEasy Toggle */}
+                  <div>
+                      <h4 className="text-sm font-semibold text-white mb-2">StreetEasy</h4>
+                      <StreetEasyToggle 
+                          enabled={mobileStreetEasyToggle} 
+                          setEnabled={setMobileStreetEasyToggle} 
+                      />
+                  </div>
+                </div>
+                {/* Fixed Apply Filters Button */}
+                <div className="fixed left-0 bottom-0 w-full bg-gray-900 py-4 z-50 px-6 md:hidden">
+                  <button
+                    className="w-full bg-green-600 text-white py-3 font-semibold text-sm rounded-lg hover:bg-green-700 transition-colors"
+                    onClick={applyMobileFilters}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col gap-6">
-                {/* Neighborhood */}
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-2">Neighborhood</h4>
-                  <LocationFilter allAreas={allAreas} tempAreas={mobileTempAreas} setTempAreas={setMobileTempAreas} mobile={true}/>
-                </div>
-
-                {/* Sort */}
-                <div>
-                    <h4 className="text-sm font-semibold text-white mb-2">Sort</h4>
-                    <SortFilter value={tempSortOption} setValue={setTempSortOption} mobile={true} />
-                </div>
-
-                {/* Price */}
-                <div>
-                    <h4 className="text-sm font-semibold text-white mb-2">Price</h4>
-                    <PriceFilter tempPrice={mobileTempPrice} setTempPrice={setMobileTempPrice} mobile={true} />
-                </div>
-
-                {/* Bed/Bath */}
-                <div>
-                    <h4 className="text-sm font-semibold text-white mb-2">Beds / Baths</h4>
-                    <BedBathFilter tempBed={mobileTempBed} tempBath={mobileTempBath} setTempBed={setMobileTempBed} setTempBath={setMobileTempBath} mobile={true} />
-                </div>
-
-                {/* StreetEasy Toggle */}
-                <div>
-                    <h4 className="text-sm font-semibold text-white mb-2">StreetEasy</h4>
-                    <StreetEasyToggle 
-                        enabled={mobileStreetEasyToggle} 
-                        setEnabled={setMobileStreetEasyToggle} 
-                    />
-                </div>
-
-              </div>
-              <div className="mt-8 flex sticky bottom-0 bg-gray-900 py-4">
-                <button
-                  className="flex-1 bg-green-600 text-white py-3 font-semibold text-sm rounded-lg hover:bg-green-700 transition-colors"
-                  onClick={applyMobileFilters}
-                >
-                  Apply Filters
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )
+        }
       </div>
     </header>
   );
