@@ -28,7 +28,7 @@ const FilterButton = ({ onClick, children, isActive }) => (
 // Helper: StreetEasy Toggle Switch
 const StreetEasyToggle = ({ enabled, setEnabled }) => (
   <div className="flex items-center gap-3 text-xs text-gray-300">
-     <span className={!enabled ? 'text-green-400 font-semibold' : ''}>Off StreetEasy</span>
+     <span className={!enabled ? 'text-green-400 font-semibold' : ''}>Only on StreetEasy</span>
     <button
       onClick={() => setEnabled(!enabled)}
       className={`relative inline-flex items-center h-5 rounded-full w-9 transition-colors duration-300 focus:outline-none ${
@@ -41,10 +41,9 @@ const StreetEasyToggle = ({ enabled, setEnabled }) => (
         }`}
       />
     </button>
-    <span className={enabled ? 'text-green-400 font-semibold' : ''}>On StreetEasy</span>
+    <span className={enabled ? 'text-green-400 font-semibold' : ''}>NOT on StreetEasy</span>
   </div>
 );
-
 
 // Main Filter Panel Component
 export default function FilterPanel({
@@ -63,6 +62,9 @@ export default function FilterPanel({
   });
   const [tempBed, setTempBed] = useState(filters.bedrooms);
   const [tempBath, setTempBath] = useState(filters.bathrooms);
+  
+  // StreetEasy toggle state - default to true (show listings NOT on StreetEasy)
+  const [streetEasyToggle, setStreetEasyToggle] = useState(true);
 
   // Temporary states for mobile modal
   const [mobileTempAreas, setMobileTempAreas] = useState(filters.areas);
@@ -73,6 +75,7 @@ export default function FilterPanel({
   const [mobileTempBed, setMobileTempBed] = useState(filters.bedrooms);
   const [mobileTempBath, setMobileTempBath] = useState(filters.bathrooms);
   const [tempSortOption, setTempSortOption] = useState(filters.sortOption ?? "original");
+  const [mobileStreetEasyToggle, setMobileStreetEasyToggle] = useState(true);
 
   const dropdownRefs = {
     location: useRef(),
@@ -114,6 +117,7 @@ export default function FilterPanel({
     setMobileTempBed(filters.bedrooms);
     setMobileTempBath(filters.bathrooms);
     setTempSortOption(filters.sortOption ?? "original");
+    setMobileStreetEasyToggle(streetEasyToggle);
     setShowMobileModal(true);
   };
 
@@ -128,7 +132,9 @@ export default function FilterPanel({
       bedrooms: normBed,
       bathrooms: normBath,
       sortOption: tempSortOption,
+      streetEasyToggle: mobileStreetEasyToggle,
     }));
+    setStreetEasyToggle(mobileStreetEasyToggle);
     setShowMobileModal(false);
   };
   
@@ -138,6 +144,7 @@ export default function FilterPanel({
     filters.bedrooms !== undefined,
     filters.bathrooms !== undefined,
     filters.sortOption !== "original",
+    filters.streetEasyToggle !== undefined,
   ].filter(Boolean).length;
 
   const renderDropdown = (filterName) => {
@@ -191,6 +198,17 @@ export default function FilterPanel({
                     <span className="font-medium">Beds / Baths</span>
                 </FilterButton>
                 {openDropdown === 'beds' && renderDropdown('beds')}
+            </div>
+
+            {/* STREETEASY TOGGLE */}
+            <div className="flex items-center">
+                <StreetEasyToggle 
+                    enabled={streetEasyToggle} 
+                    setEnabled={(enabled) => {
+                        setStreetEasyToggle(enabled);
+                        setFilters(prev => ({ ...prev, streetEasyToggle: enabled }));
+                    }} 
+                />
             </div>
         </div>
 
@@ -246,6 +264,15 @@ export default function FilterPanel({
                 <div>
                     <h4 className="text-sm font-semibold text-white mb-2">Beds / Baths</h4>
                     <BedBathFilter tempBed={mobileTempBed} tempBath={mobileTempBath} setTempBed={setMobileTempBed} setTempBath={setMobileTempBath} mobile={true} />
+                </div>
+
+                {/* StreetEasy Toggle */}
+                <div>
+                    <h4 className="text-sm font-semibold text-white mb-2">StreetEasy</h4>
+                    <StreetEasyToggle 
+                        enabled={mobileStreetEasyToggle} 
+                        setEnabled={setMobileStreetEasyToggle} 
+                    />
                 </div>
 
               </div>

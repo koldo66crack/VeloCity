@@ -108,6 +108,7 @@ export function getDefaultFilters(listings) {
     onlyFeatured: false,
     areas: [],
     sortOption: "original", // Preserves shuffled order unless changed
+    streetEasyToggle: true, // Default to showing listings NOT on StreetEasy
   };
 }
 
@@ -179,6 +180,18 @@ function applyFilters(listings, filters) {
       ).some((m) => normalizedMarketplaces.includes(m))
     )
       return false;
+
+    // ---- STREETEASY TOGGLE FILTER ----
+    if (filters.streetEasyToggle !== undefined) {
+      const isOnStreetEasy = l.on_streeteasy === true;
+      if (filters.streetEasyToggle) {
+        // Show listings NOT on StreetEasy (default)
+        if (isOnStreetEasy) return false;
+      } else {
+        // Show listings that ARE on StreetEasy
+        if (!isOnStreetEasy) return false;
+      }
+    }
 
     if (complaints > filters.maxComplaints) return false;
     if (filters.onlyNoFee && !l.no_fee) return false;
