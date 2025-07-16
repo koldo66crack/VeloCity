@@ -1,10 +1,6 @@
 // src/components/MapViewGoogle.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Marker,
-} from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import Supercluster from "supercluster";
 import { listingsToGeojson } from "../utils/listingsToGeojson";
 import { Link } from "react-router-dom";
@@ -21,7 +17,7 @@ function getMarkerSize(count) {
 }
 
 // Rectangle marker SVG for price or 'X listings'
-function getRectMarkerSvg(label, color = '#fff', bg = '#34495e') {
+function getRectMarkerSvg(label, color = "#fff", bg = "#34495e") {
   return (
     "data:image/svg+xml;charset=UTF-8," +
     encodeURIComponent(
@@ -33,10 +29,7 @@ function getRectMarkerSvg(label, color = '#fff', bg = '#34495e') {
   );
 }
 
-export default function MapViewGoogle({
-  listings,
-  onBoundsChange,
-}) {
+export default function MapViewGoogle({ listings, onBoundsChange }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   });
@@ -82,10 +75,10 @@ export default function MapViewGoogle({
       }
     };
     if (activeBuilding) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeBuilding]);
 
@@ -107,17 +100,37 @@ export default function MapViewGoogle({
   };
 
   // Fit map to show all listings on load
+  // const fitMapToAllListings = (mapInstance) => {
+  //   if (!mapInstance || !listings.length) return;
+  //   const bounds = new window.google.maps.LatLngBounds();
+  //   listings.forEach(listing => {
+  //     if (listing.addr_lat && listing.addr_lon) {
+  //       bounds.extend({
+  //         lat: parseFloat(listing.addr_lat),
+  //         lng: parseFloat(listing.addr_lon)
+  //       });
+  //     }
+  //   });
+  //   mapInstance.fitBounds(bounds, 50);
+  // };
+
+  // Fit map to show Manhattan/New York area on load
   const fitMapToAllListings = (mapInstance) => {
-    if (!mapInstance || !listings.length) return;
-    const bounds = new window.google.maps.LatLngBounds();
-    listings.forEach(listing => {
-      if (listing.addr_lat && listing.addr_lon) {
-        bounds.extend({
-          lat: parseFloat(listing.addr_lat),
-          lng: parseFloat(listing.addr_lon)
-        });
-      }
-    });
+    if (!mapInstance) return;
+
+    // Default bounds for Manhattan/New York City area
+    const manhattanBounds = {
+      north: 40.8, // Upper Manhattan
+      south: 40.7, // Lower Manhattan
+      east: -73.9, // East River
+      west: -74.05, // Hudson River
+    };
+
+    const bounds = new window.google.maps.LatLngBounds(
+      { lat: manhattanBounds.south, lng: manhattanBounds.west },
+      { lat: manhattanBounds.north, lng: manhattanBounds.east }
+    );
+
     mapInstance.fitBounds(bounds, 50);
   };
 
@@ -127,7 +140,7 @@ export default function MapViewGoogle({
     const leaves = supercluster.getLeaves(cluster.id, Infinity);
     // Group by building (addr_street)
     const buildingMap = {};
-    leaves.forEach(l => {
+    leaves.forEach((l) => {
       const bkey = l.properties.addr_street;
       if (!buildingMap[bkey]) buildingMap[bkey] = [];
       buildingMap[bkey].push(l);
@@ -135,7 +148,7 @@ export default function MapViewGoogle({
     // Prepare markers: one per building
     const markers = Object.entries(buildingMap).map(([bkey, leaves]) => {
       const { addr_lat, addr_lon } = leaves[0].properties.listings[0];
-      const listingsArr = leaves.flatMap(l => l.properties.listings);
+      const listingsArr = leaves.flatMap((l) => l.properties.listings);
       return {
         addr_street: bkey,
         lat: parseFloat(addr_lat),
@@ -174,7 +187,7 @@ export default function MapViewGoogle({
       mapContainerStyle={containerStyle}
       center={COLUMBIA_UNIVERSITY_COORDS}
       zoom={12}
-      onLoad={map => {
+      onLoad={(map) => {
         setMapRef(map);
         emitBounds(map);
         fitMapToAllListings(map);
@@ -207,7 +220,11 @@ export default function MapViewGoogle({
             const isMulti = marker.listings.length > 1;
             const label = isMulti
               ? `${marker.listings.length} listings`
-              : `$${marker.listings[0].price ? Math.round(marker.listings[0].price / 100) / 10 + 'k' : ''}`;
+              : `$${
+                  marker.listings[0].price
+                    ? Math.round(marker.listings[0].price / 100) / 10 + "k"
+                    : ""
+                }`;
             return (
               <Marker
                 key={marker.addr_street + i}
@@ -233,7 +250,11 @@ export default function MapViewGoogle({
                     });
                   }
                 }}
-                title={isMulti ? `${marker.listings.length} listings` : `Price: $${marker.listings[0].price}`}
+                title={
+                  isMulti
+                    ? `${marker.listings.length} listings`
+                    : `Price: $${marker.listings[0].price}`
+                }
               />
             );
           })
@@ -246,7 +267,9 @@ export default function MapViewGoogle({
               count = cluster.properties.point_count;
             } else {
               // For individual buildings, count total apartments
-              count = cluster.properties.listings ? cluster.properties.listings.length : 1;
+              count = cluster.properties.listings
+                ? cluster.properties.listings.length
+                : 1;
             }
             const markerSize = getMarkerSize(count);
             return (
@@ -258,7 +281,9 @@ export default function MapViewGoogle({
                     "data:image/svg+xml;charset=UTF-8," +
                     encodeURIComponent(
                       `<svg xmlns='http://www.w3.org/2000/svg' width='${markerSize}' height='${markerSize}'>
-                        <circle cx='${markerSize / 2}' cy='${markerSize / 2}' r='${
+                        <circle cx='${markerSize / 2}' cy='${
+                        markerSize / 2
+                      }' r='${
                         markerSize / 2 - 2.5
                       }' fill='${MARKER_COLOR}' stroke='#fff' stroke-width='3'/>
                         <text x='50%' y='55%' text-anchor='middle' fill='${MARKER_TEXT_COLOR}' font-size='${Math.max(
@@ -267,7 +292,10 @@ export default function MapViewGoogle({
                       )}' font-family='Arial' font-weight='bold' dy='.3em'>${count}</text>
                       </svg>`
                     ),
-                  scaledSize: new window.google.maps.Size(markerSize, markerSize),
+                  scaledSize: new window.google.maps.Size(
+                    markerSize,
+                    markerSize
+                  ),
                 }}
                 onClick={() => {
                   if (isCluster) {
@@ -304,51 +332,75 @@ export default function MapViewGoogle({
             maxHeight: "70vh",
             overflowY: "auto",
             padding: "10px 12px 10px 10px",
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {activeBuilding.properties.listings.map((listing, idx) => (
             <div
               key={listing.id || idx}
               style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                background: '#f8fafc',
-                borderRadius: '8px',
-                padding: '6px 8px',
-                boxShadow: '0 1px 4px rgba(44,62,80,0.07)',
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                background: "#f8fafc",
+                borderRadius: "8px",
+                padding: "6px 8px",
+                boxShadow: "0 1px 4px rgba(44,62,80,0.07)",
               }}
             >
               {/* First image only, using photos_url */}
-              {Array.isArray(listing.photos_url) && listing.photos_url.length > 0 && (
-                <img
-                  src={listing.photos_url[0]}
-                  alt={listing.title}
-                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
-                  onError={e => (e.target.style.display = 'none')}
-                />
-              )}
+              {Array.isArray(listing.photos_url) &&
+                listing.photos_url.length > 0 && (
+                  <img
+                    src={listing.photos_url[0]}
+                    alt={listing.title}
+                    style={{
+                      width: 60,
+                      height: 60,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                      flexShrink: 0,
+                    }}
+                    onError={(e) => (e.target.style.display = "none")}
+                  />
+                )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 18, color: '#222', margin: '2px 0' }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    color: "#222",
+                    margin: "2px 0",
+                  }}
+                >
                   ${listing.price?.toLocaleString()}
                 </div>
-                <div style={{ fontSize: 13, color: '#444', marginBottom: 2 }}>
+                <div style={{ fontSize: 13, color: "#444", marginBottom: 2 }}>
                   {listing.bedrooms} bed | {listing.bathrooms} bath
                 </div>
-                <div style={{ fontSize: 12, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {listing.addr_street} {listing.addr_unit ? `, Unit ${listing.addr_unit}` : ''} {listing.area_name || ''}
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#666",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {listing.addr_street}{" "}
+                  {listing.addr_unit ? `, Unit ${listing.addr_unit}` : ""}{" "}
+                  {listing.area_name || ""}
                 </div>
                 <Link
                   to={`/listing/${listing.id}`}
                   style={{
-                    display: 'inline-block',
+                    display: "inline-block",
                     marginTop: 4,
-                    color: '#2563eb',
+                    color: "#2563eb",
                     fontWeight: 600,
                     fontSize: 13,
-                    textDecoration: 'underline',
+                    textDecoration: "underline",
                   }}
                   target="_blank"
                   rel="noopener noreferrer"
