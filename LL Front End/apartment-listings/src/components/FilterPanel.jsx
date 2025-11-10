@@ -5,6 +5,7 @@ import LocationFilter from "./LocationFilter";
 import SortFilter from "./SortFilter";
 import PriceFilter from "./PriceFilter";
 import BedBathFilter from "./BedBathFilter";
+import SmartFiltersTab from "./SmartFiltersTab";
 import TooltipInfo from "./TooltipInfo";
 
 // Helper: A styled button for our filters
@@ -63,6 +64,7 @@ export default function FilterPanel({
   });
   const [tempBed, setTempBed] = useState(filters.bedrooms);
   const [tempBath, setTempBath] = useState(filters.bathrooms);
+  const [selectedSmartFeatures, setSelectedSmartFeatures] = useState(filters.smartFeatures || []);
   
   // StreetEasy toggle state - default to true (show listings NOT on StreetEasy)
   const [streetEasyToggle, setStreetEasyToggle] = useState(true);
@@ -83,6 +85,7 @@ export default function FilterPanel({
     sort: useRef(),
     price: useRef(),
     beds: useRef(),
+    smart: useRef(),
   };
 
   useEffect(() => {
@@ -134,6 +137,7 @@ export default function FilterPanel({
       bathrooms: normBath,
       sortOption: tempSortOption,
       streetEasyToggle: mobileStreetEasyToggle,
+      smartFeatures: selectedSmartFeatures,
     }));
     setStreetEasyToggle(mobileStreetEasyToggle);
     setShowMobileModal(false);
@@ -146,6 +150,7 @@ export default function FilterPanel({
     filters.bathrooms !== undefined,
     filters.sortOption !== "original",
     filters.streetEasyToggle !== undefined,
+    filters.smartFeatures?.length > 0,
   ].filter(Boolean).length;
 
   const renderDropdown = (filterName) => {
@@ -199,6 +204,24 @@ export default function FilterPanel({
                     <span className="font-medium">Beds / Baths</span>
                 </FilterButton>
                 {openDropdown === 'beds' && renderDropdown('beds')}
+            </div>
+
+            {/* SMART FILTERS */}
+            <div className="relative" ref={dropdownRefs.smart}>
+                <FilterButton onClick={() => setOpenDropdown(openDropdown === 'smart' ? null : 'smart')} isActive={openDropdown === 'smart' || (filters.smartFeatures && filters.smartFeatures.length > 0)}>
+                    <span className="font-medium">Smart Filters</span>
+                </FilterButton>
+                {openDropdown === 'smart' && (
+                  <div className="absolute top-full mt-2 left-0 z-50 bg-gray-800 border border-gray-700 shadow-lg rounded-lg p-4 min-w-[400px]">
+                    <SmartFiltersTab 
+                      selectedFeatures={selectedSmartFeatures}
+                      setSelectedFeatures={setSelectedSmartFeatures}
+                      onFiltersChange={(features) => {
+                        setFilters(prev => ({ ...prev, smartFeatures: features }));
+                      }}
+                    />
+                  </div>
+                )}
             </div>
 
             {/* STREETEASY TOGGLE */}
@@ -270,6 +293,18 @@ export default function FilterPanel({
                       <StreetEasyToggle 
                           enabled={mobileStreetEasyToggle} 
                           setEnabled={setMobileStreetEasyToggle} 
+                      />
+                  </div>
+                  
+                  {/* Smart Filters */}
+                  <div>
+                      <h4 className="text-sm font-semibold text-white mb-2">Smart Filters</h4>
+                      <SmartFiltersTab 
+                          selectedFeatures={selectedSmartFeatures}
+                          setSelectedFeatures={setSelectedSmartFeatures}
+                          onFiltersChange={(features) => {
+                            setFilters(prev => ({ ...prev, smartFeatures: features }));
+                          }}
                       />
                   </div>
                 </div>

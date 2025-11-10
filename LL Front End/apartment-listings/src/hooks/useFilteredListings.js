@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import enrichedListings from "../data/combined_listings_with_lionscore.json";
 import { calculateWalkingDistance } from "../utils/distanceUtils";
+import { listingMatchesFeature } from "../utils/featureMatcher";
 
 // --- Utilities ---
 
@@ -109,6 +110,7 @@ export function getDefaultFilters(listings) {
     areas: [],
     sortOption: "original", // Preserves shuffled order unless changed
     streetEasyToggle: true, // Default to showing listings NOT on StreetEasy
+    smartFeatures: [], // New: selected smart features
   };
 }
 
@@ -204,6 +206,16 @@ function applyFilters(listings, filters) {
       )
     )
       return false;
+
+    // ---- SMART FEATURES FILTER ----
+    if (filters.smartFeatures && filters.smartFeatures.length > 0) {
+      // All selected features must match (AND logic)
+      for (const feature of filters.smartFeatures) {
+        if (!listingMatchesFeature(l, feature)) {
+          return false;
+        }
+      }
+    }
 
     return true;
   });

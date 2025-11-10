@@ -22,6 +22,7 @@ model Profile {
   groupMembership GroupMember[]
   groupSaves      GroupSavedListing[]  @relation("GroupSavedListing_saver")
   listingVotes    ListingVote[]
+  smartFilterUsages SmartFilterUsage[]
 
   @@map("profiles")
 }
@@ -113,4 +114,19 @@ model ListingVote {
   createdAt DateTime @default(now())
 
   @@unique([groupId, listingId, userId])
+}
+
+/// Smart filter usage tracking
+model SmartFilterUsage {
+  id          String   @id @default(cuid())
+  userId      String   // Can be either a UUID (logged in user) or anonymous ID
+  user        Profile? @relation(fields: [userId], references: [id]) // Optional relation for logged-in users
+  feature     String   // The feature that was used (e.g., "in unit washer")
+  action      String   // "added", "removed", "searched"
+  context     Json?    // Additional context like search query, filter combination
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([feature])
+  @@index([createdAt])
 }

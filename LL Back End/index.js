@@ -8,6 +8,7 @@ import preferencesRoutes from "./routes/preferences.js";
 import savedRoutes from "./routes/saved.js";
 import viewedRoutes from "./routes/viewed.js";
 import groupRoutes from "./routes/group.js";
+import smartFiltersRoutes from "./routes/smartFilters.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/preferences", preferencesRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/viewed", viewedRoutes);
 app.use("/api/group", groupRoutes);
+app.use("/api/smart-filters", smartFiltersRoutes);
 
 // --- Health check ---
 app.get("/", (req, res) => {

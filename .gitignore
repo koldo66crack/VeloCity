@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment variables (IMPORTANT: Keep these secret!)
+.env
+.env.*
+!.env.example
+
+# Sensitive information files
+IMP_INFO.txt
+**/IMP_INFO.txt
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+
+# Logs
+logs/
+*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Testing
+coverage/
+
+# Misc
+*.local
+.cache/
+
