@@ -1,4 +1,4 @@
-# VeloCity (Lion Lease)
+# VeloCity (formerly Lion Lease, a.k.a LL)
 
 <div align="center">
   <h3>🏠 Your Gem-Finder for NYC Apartment Hunting</h3>
